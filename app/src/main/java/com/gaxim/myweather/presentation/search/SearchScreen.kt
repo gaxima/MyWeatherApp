@@ -22,11 +22,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.gaxim.myweather.R
 import com.gaxim.myweather.domain.model.City
+import com.gaxim.myweather.presentation.common.ErrorKind
 import com.gaxim.myweather.presentation.ui.displayName
 import com.gaxim.myweather.presentation.ui.messageRes
+import com.gaxim.myweather.presentation.ui.theme.MyWeatherTheme
 
 @Composable
 fun SearchScreen(
@@ -97,5 +102,30 @@ private fun CenteredMessage(text: String, modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+private val previewCities = listOf(
+    City("Zurich", "Switzerland", "Zurich", 47.37, 8.54),
+    City("Zurich", "United States", "Illinois", 42.15, -88.13),
+)
+
+private class SearchUiStateProvider : PreviewParameterProvider<SearchUiState> {
+    override val values = sequenceOf(
+        SearchUiState.Idle(),
+        SearchUiState.Loading("zur"),
+        SearchUiState.Success("zurich", previewCities),
+        SearchUiState.Empty("qwertyuiop"),
+        SearchUiState.Error("zurich", ErrorKind.NETWORK),
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SearchScreenPreview(
+    @PreviewParameter(SearchUiStateProvider::class) state: SearchUiState,
+) {
+    MyWeatherTheme {
+        SearchScreen(state = state, onQueryChange = {}, onCityClick = {})
     }
 }

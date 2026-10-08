@@ -22,14 +22,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.gaxim.myweather.R
+import com.gaxim.myweather.domain.model.Activity
 import com.gaxim.myweather.domain.model.ActivityScore
+import com.gaxim.myweather.domain.model.City
 import com.gaxim.myweather.domain.model.DayRanking
+import com.gaxim.myweather.domain.model.ReasonKey
+import com.gaxim.myweather.domain.model.WeatherFactor
+import com.gaxim.myweather.presentation.common.ErrorKind
 import com.gaxim.myweather.presentation.ui.displayName
 import com.gaxim.myweather.presentation.ui.labelRes
 import com.gaxim.myweather.presentation.ui.messageRes
 import com.gaxim.myweather.presentation.ui.textRes
+import com.gaxim.myweather.presentation.ui.theme.MyWeatherTheme
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -125,5 +135,46 @@ fun ActivityScoreRow(score: ActivityScore, modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+private val previewCity = City("Zurich", "Switzerland", "Zurich", 47.37, 8.54)
+
+private val previewDay = DayRanking(
+    date = LocalDate.of(2026, 1, 15),
+    scores = listOf(
+        ActivityScore(Activity.INDOOR_SIGHTSEEING, 80, ReasonKey.INDOOR_ANY_WEATHER, emptySet()),
+        ActivityScore(Activity.OUTDOOR_SIGHTSEEING, 55, ReasonKey.OUTDOOR_TOO_COLD, emptySet()),
+        ActivityScore(Activity.SKIING, 20, ReasonKey.SKI_TOO_WARM, setOf(WeatherFactor.SNOWFALL)),
+        ActivityScore(Activity.SURFING, 5, ReasonKey.SURF_TOO_CALM, emptySet()),
+    ),
+)
+
+private class RankingUiStateProvider : PreviewParameterProvider<RankingUiState> {
+    override val values = sequenceOf(
+        RankingUiState.Loading(previewCity),
+        RankingUiState.Success(
+            previewCity,
+            listOf(previewDay, previewDay.copy(date = previewDay.date.plusDays(1))),
+        ),
+        RankingUiState.Error(previewCity, ErrorKind.TIMEOUT),
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RankingScreenPreview(
+    @PreviewParameter(RankingUiStateProvider::class) state: RankingUiState,
+) {
+    MyWeatherTheme {
+        RankingScreen(state = state, onBack = {}, onRetry = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DayRankingCardPreview() {
+    MyWeatherTheme {
+        DayRankingCard(previewDay)
     }
 }

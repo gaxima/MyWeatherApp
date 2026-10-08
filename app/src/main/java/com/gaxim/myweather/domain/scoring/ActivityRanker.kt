@@ -3,6 +3,7 @@ package com.gaxim.myweather.domain.scoring
 import com.gaxim.myweather.domain.model.ActivityScore
 import com.gaxim.myweather.domain.model.DailyForecast
 import com.gaxim.myweather.domain.model.DayRanking
+import javax.inject.Inject
 
 /**
  * Scores every activity for a day and orders them best first.
@@ -11,8 +12,11 @@ import com.gaxim.myweather.domain.model.DayRanking
  * the order of [scorers].
  */
 class ActivityRanker(
-    private val scorers: List<ActivityScorer> = DEFAULT_SCORERS,
+    private val scorers: List<ActivityScorer>,
 ) {
+    @Inject
+    constructor() : this(DEFAULT_SCORERS)
+
     fun rank(forecast: DailyForecast): DayRanking {
         val scores = scorers
             .map { it.score(forecast) }

@@ -42,4 +42,19 @@ internal class ScoreBuilder {
  * Works in either direction, e.g. `ramp(wind, worst = 60.0, best = 20.0)`. Null stays null.
  */
 internal fun ramp(value: Double?, worst: Double, best: Double): Double? =
-    value?.let { ((it - worst) / (best - worst)).coerceIn(0.0, 1.0) }
+    value?.let { rampValue(it, worst, best) }
+
+/**
+ * Trapezoid 0..1 fraction: 0 at or below [zeroLow], rising to 1 at [fullLow], flat to
+ * [fullHigh], falling to 0 at [zeroHigh]. For factors where both too little and too much are bad.
+ */
+internal fun band(
+    value: Double?,
+    zeroLow: Double,
+    fullLow: Double,
+    fullHigh: Double,
+    zeroHigh: Double,
+): Double? = value?.let { minOf(rampValue(it, zeroLow, fullLow), rampValue(it, zeroHigh, fullHigh)) }
+
+private fun rampValue(value: Double, worst: Double, best: Double): Double =
+    ((value - worst) / (best - worst)).coerceIn(0.0, 1.0)

@@ -1,4 +1,4 @@
-package com.gaxim.myweather.ui.theme
+package com.gaxim.myweather.presentation.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

@@ -1,4 +1,4 @@
-package com.gaxim.myweather.ui.theme
+package com.gaxim.myweather.presentation.ui.theme
 
 import android.app.Activity
 import android.os.Build

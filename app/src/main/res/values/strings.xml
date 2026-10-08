@@ -1,3 +1,52 @@
 <resources>
     <string name="app_name">My Weather</string>
+
+    <!-- Search -->
+    <string name="search_title">Find a city</string>
+    <string name="search_hint">City name</string>
+    <string name="search_idle">Search for a city to see how the next 7 days rank for activities.</string>
+    <string name="search_empty">No city matches \"%1$s\".</string>
+    <string name="search_clear">Clear</string>
+
+    <!-- Ranking -->
+    <string name="ranking_title">Activities in %1$s</string>
+    <string name="ranking_back">Back</string>
+    <string name="ranking_retry">Try again</string>
+    <string name="ranking_score">%1$d / 100</string>
+    <string name="ranking_ignored_factors">Not considered (no data): %1$s</string>
+
+    <!-- Activities -->
+    <string name="activity_skiing">Skiing</string>
+    <string name="activity_surfing">Surfing</string>
+    <string name="activity_outdoor_sightseeing">Outdoor sightseeing</string>
+    <string name="activity_indoor_sightseeing">Indoor sightseeing</string>
+
+    <!-- Reasons -->
+    <string name="reason_ski_fresh_snow">Fresh snow and cold enough to keep it</string>
+    <string name="reason_ski_little_fresh_snow">Cold enough, but little fresh snow</string>
+    <string name="reason_ski_too_warm">Too warm, snow will melt</string>
+    <string name="reason_surf_rideable_wind">Wind should give rideable surf</string>
+    <string name="reason_surf_too_calm">Too calm, likely flat</string>
+    <string name="reason_strong_wind">Strong wind</string>
+    <string name="reason_storm">Thunderstorm expected</string>
+    <string name="reason_rain">Rain expected</string>
+    <string name="reason_outdoor_pleasant">Pleasant weather to be outside</string>
+    <string name="reason_outdoor_too_cold">Too cold to enjoy outdoors</string>
+    <string name="reason_outdoor_too_hot">Too hot to enjoy outdoors</string>
+    <string name="reason_indoor_any_weather">Works in any weather</string>
+    <string name="reason_insufficient_data">Not enough forecast data</string>
+
+    <!-- Weather factors -->
+    <string name="factor_weather_code">conditions</string>
+    <string name="factor_temperature">temperature</string>
+    <string name="factor_precipitation">precipitation</string>
+    <string name="factor_snowfall">snowfall</string>
+    <string name="factor_wind_speed">wind speed</string>
+    <string name="factor_wind_gusts">wind gusts</string>
+
+    <!-- Errors -->
+    <string name="error_network">Can\'t reach the server. Check your connection.</string>
+    <string name="error_timeout">The request took too long. Please try again.</string>
+    <string name="error_invalid_response">The server sent a response we couldn\'t read.</string>
+    <string name="error_unknown">Something went wrong.</string>
 </resources>

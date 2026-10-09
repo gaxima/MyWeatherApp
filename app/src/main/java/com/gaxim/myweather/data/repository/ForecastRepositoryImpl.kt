@@ -2,6 +2,7 @@ package com.gaxim.myweather.data.repository
 
 import com.gaxim.myweather.data.remote.ForecastApi
 import com.gaxim.myweather.data.remote.mapper.toDomain
+import com.gaxim.myweather.data.util.safeCall
 import com.gaxim.myweather.di.IoDispatcher
 import com.gaxim.myweather.domain.model.City
 import com.gaxim.myweather.domain.model.DailyForecast

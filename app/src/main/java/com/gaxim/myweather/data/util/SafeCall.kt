@@ -1,4 +1,4 @@
-package com.gaxim.myweather.data.repository
+package com.gaxim.myweather.data.util
 
 import com.gaxim.myweather.domain.model.DomainError
 import java.io.IOException

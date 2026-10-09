@@ -4,18 +4,31 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gaxim.myweather.presentation.navigation.AppNavHost
 import com.gaxim.myweather.presentation.ui.theme.MyWeatherTheme
+import com.gaxim.myweather.presentation.ui.theme.ThemeViewModel
+import com.gaxim.myweather.presentation.ui.theme.isDark
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val themeViewModel: ThemeViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyWeatherTheme {
-                AppNavHost()
+            // Draw nothing until the saved theme is known, so a dark-mode user never sees a light flash.
+            val themeMode = themeViewModel.themeMode.collectAsStateWithLifecycle().value
+                ?: return@setContent
+            MyWeatherTheme(darkTheme = themeMode.isDark()) {
+                AppNavHost(
+                    themeMode = themeMode,
+                    onToggleTheme = themeViewModel::onToggleTheme,
+                )
             }
         }
     }

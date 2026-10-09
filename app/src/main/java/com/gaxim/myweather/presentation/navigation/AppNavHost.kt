@@ -19,6 +19,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gaxim.myweather.R
+import com.gaxim.myweather.domain.model.ThemeMode
 import com.gaxim.myweather.presentation.ranking.RankingEvent
 import com.gaxim.myweather.presentation.ranking.RankingScreen
 import com.gaxim.myweather.presentation.ranking.RankingViewModel
@@ -26,11 +27,16 @@ import com.gaxim.myweather.presentation.search.SearchEvent
 import com.gaxim.myweather.presentation.search.SearchScreen
 import com.gaxim.myweather.presentation.search.SearchViewModel
 import com.gaxim.myweather.presentation.ui.messageRes
+import com.gaxim.myweather.presentation.ui.theme.ThemeToggleButton
 
 /** Wires the two screens to their ViewModels and to each other. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavHost(modifier: Modifier = Modifier) {
+fun AppNavHost(
+    themeMode: ThemeMode,
+    onToggleTheme: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = SearchRoute, modifier = modifier) {
         composable<SearchRoute> {
@@ -48,7 +54,10 @@ fun AppNavHost(modifier: Modifier = Modifier) {
 
             Scaffold(
                 topBar = {
-                    TopAppBar(title = { Text(stringResource(R.string.search_title)) })
+                    TopAppBar(
+                        title = { Text(stringResource(R.string.search_title)) },
+                        actions = { ThemeToggleButton(mode = themeMode, onToggle = onToggleTheme) },
+                    )
                 },
             ) { innerPadding ->
                 SearchScreen(

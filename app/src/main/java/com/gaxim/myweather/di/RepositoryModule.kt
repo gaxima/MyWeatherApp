@@ -2,8 +2,10 @@ package com.gaxim.myweather.di
 
 import com.gaxim.myweather.data.repository.CityRepositoryImpl
 import com.gaxim.myweather.data.repository.ForecastRepositoryImpl
+import com.gaxim.myweather.data.repository.ThemeRepositoryImpl
 import com.gaxim.myweather.domain.repository.CityRepository
 import com.gaxim.myweather.domain.repository.ForecastRepository
+import com.gaxim.myweather.domain.repository.ThemeRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -18,4 +20,7 @@ interface RepositoryModule {
 
     @Binds
     fun bindForecastRepository(impl: ForecastRepositoryImpl): ForecastRepository
+
+    @Binds
+    fun bindThemeRepository(impl: ThemeRepositoryImpl): ThemeRepository
 }

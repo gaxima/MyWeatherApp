@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class RankingViewModel @Inject constructor(
@@ -59,7 +60,7 @@ class RankingViewModel @Inject constructor(
             _uiState.value = RankingUiState.Refreshing(city, days)
             // Keep the indicator up long enough to be noticed even when the request is instant.
             val result = coroutineScope {
-                val minDisplay = launch { delay(REFRESH_MIN_DISPLAY_MILLIS) }
+                val minDisplay = launch { delay(REFRESH_MIN_DISPLAY_MILLIS.milliseconds) }
                 getActivityRanking(city).also { minDisplay.join() }
             }
             result.fold(

@@ -10,7 +10,6 @@ import androidx.compose.ui.semantics.semantics
 import com.gaxim.myweather.R
 import com.gaxim.myweather.domain.model.ThemeMode
 
-/** Shows the current [mode] and asks for the next one on click. */
 @Composable
 fun ThemeToggleButton(
     mode: ThemeMode,

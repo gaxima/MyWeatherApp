@@ -20,11 +20,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
-/**
- * Persists the theme choice by enum name. A missing or unrecognised value (for example from a
- * renamed enum entry) reads as [ThemeMode.System], and an unreadable store is treated as empty,
- * so a bad preference can never stop the app from launching.
- */
 class ThemeRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,

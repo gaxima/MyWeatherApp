@@ -12,6 +12,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -55,7 +57,12 @@ class RankingViewModel @Inject constructor(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             _uiState.value = RankingUiState.Refreshing(city, days)
-            getActivityRanking(city).fold(
+            // Keep the indicator up long enough to be noticed even when the request is instant.
+            val result = coroutineScope {
+                val minDisplay = launch { delay(REFRESH_MIN_DISPLAY_MILLIS) }
+                getActivityRanking(city).also { minDisplay.join() }
+            }
+            result.fold(
                 onSuccess = { _uiState.value = RankingUiState.Success(city, it) },
                 onFailure = {
                     _uiState.value = RankingUiState.Success(city, days)
@@ -80,5 +87,13 @@ class RankingViewModel @Inject constructor(
                 onFailure = { RankingUiState.Error(city, it.toErrorKind()) },
             )
         }
+    }
+
+    companion object {
+        /**
+         * Shortest time [RankingUiState.Refreshing] stays on screen. Below roughly half a second a
+         * loading indicator reads as a flicker; a slower request is never delayed further.
+         */
+        const val REFRESH_MIN_DISPLAY_MILLIS = 700L
     }
 }

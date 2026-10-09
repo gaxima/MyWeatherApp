@@ -12,5 +12,8 @@ sealed interface RankingUiState {
 
     data class Success(override val city: City, val days: List<DayRanking>) : RankingUiState
 
+    /** A pull-to-refresh is in flight; [days] from the previous load stay visible meanwhile. */
+    data class Refreshing(override val city: City, val days: List<DayRanking>) : RankingUiState
+
     data class Error(override val city: City?, val kind: ErrorKind) : RankingUiState
 }

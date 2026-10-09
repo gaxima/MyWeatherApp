@@ -140,6 +140,73 @@ class RankingViewModelTest {
             assertEquals(bare, viewModel.uiState.value.city)
         }
 
+    @Test
+    fun `given a forecast, when refreshed, then old days stay visible until new ones arrive`() =
+        runTest(dispatcher) {
+            repository.result = Result.success(listOf(forecast()))
+            val viewModel = viewModel()
+            runCurrent()
+            val first = viewModel.uiState.value as RankingUiState.Success
+
+            repository.result = Result.success(listOf(forecast(), forecast()))
+            viewModel.uiState.test {
+                assertEquals(first, awaitItem())
+
+                viewModel.refresh()
+                runCurrent()
+
+                assertEquals(RankingUiState.Refreshing(oslo, first.days), awaitItem())
+                assertEquals(2, (awaitItem() as RankingUiState.Success).days.size)
+            }
+        }
+
+    @Test
+    fun `given a forecast, when refresh fails, then old days are kept and an event is emitted`() =
+        runTest(dispatcher) {
+            repository.result = Result.success(listOf(forecast()))
+            val viewModel = viewModel()
+            runCurrent()
+            val first = viewModel.uiState.value
+
+            repository.result = Result.failure(DomainError.Network())
+            viewModel.events.test {
+                viewModel.refresh()
+                runCurrent()
+
+                assertEquals(RankingEvent.RefreshFailed(ErrorKind.NETWORK), awaitItem())
+            }
+            assertEquals(first, viewModel.uiState.value)
+        }
+
+    @Test
+    fun `given the screen is not showing a forecast, when refreshed, then nothing is fetched`() =
+        runTest(dispatcher) {
+            repository.result = Result.failure(DomainError.Timeout())
+            val viewModel = viewModel()
+            runCurrent()
+
+            viewModel.refresh()
+            runCurrent()
+
+            assertEquals(RankingUiState.Error(oslo, ErrorKind.TIMEOUT), viewModel.uiState.value)
+            assertEquals(listOf(oslo), repository.requestedCities)
+        }
+
+    @Test
+    fun `given a refresh in flight, when refreshed again, then the first one is cancelled`() =
+        runTest(dispatcher) {
+            repository.result = Result.success(listOf(forecast()))
+            val viewModel = viewModel()
+            runCurrent()
+
+            viewModel.refresh()
+            viewModel.refresh()
+            runCurrent()
+
+            assertTrue(viewModel.uiState.value is RankingUiState.Success)
+            assertEquals(2, repository.requestedCities.size)
+        }
+
     private class GatedForecastRepository(
         private val gate: CompletableDeferred<Result<List<DailyForecast>>>,
     ) : ForecastRepository {

@@ -15,10 +15,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -49,10 +53,13 @@ fun RankingScreen(
     state: RankingUiState,
     onBack: () -> Unit,
     onRetry: () -> Unit,
+    onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -82,13 +89,27 @@ fun RankingScreen(
                     TextButton(onClick = onRetry) { Text(stringResource(R.string.ranking_retry)) }
                 }
             }
-            is RankingUiState.Success -> LazyColumn(
-                modifier = contentModifier,
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(state.days, key = { it.date.toString() }) { day -> DayRankingCard(day) }
-            }
+            is RankingUiState.Success -> RankingList(state.days, false, onRefresh, contentModifier)
+            is RankingUiState.Refreshing -> RankingList(state.days, true, onRefresh, contentModifier)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RankingList(
+    days: List<DayRanking>,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    PullToRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh, modifier = modifier) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(days, key = { it.date.toString() }) { day -> DayRankingCard(day) }
         }
     }
 }
@@ -157,6 +178,7 @@ private class RankingUiStateProvider : PreviewParameterProvider<RankingUiState> 
             previewCity,
             listOf(previewDay, previewDay.copy(date = previewDay.date.plusDays(1))),
         ),
+        RankingUiState.Refreshing(previewCity, listOf(previewDay)),
         RankingUiState.Error(previewCity, ErrorKind.TIMEOUT),
     )
 }
@@ -167,7 +189,7 @@ private fun RankingScreenPreview(
     @PreviewParameter(RankingUiStateProvider::class) state: RankingUiState,
 ) {
     MyWeatherTheme {
-        RankingScreen(state = state, onBack = {}, onRetry = {})
+        RankingScreen(state = state, onBack = {}, onRetry = {}, onRefresh = {})
     }
 }
 

@@ -29,7 +29,6 @@ import com.gaxim.myweather.presentation.search.SearchViewModel
 import com.gaxim.myweather.presentation.theme.ThemeToggleButton
 import com.gaxim.myweather.presentation.ui.messageRes
 
-/** Wires the two screens to their ViewModels and to each other. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(

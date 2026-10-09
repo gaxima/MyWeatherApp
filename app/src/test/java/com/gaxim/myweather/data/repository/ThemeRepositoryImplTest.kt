@@ -32,7 +32,7 @@ class ThemeRepositoryImplTest {
     private val dispatcher = UnconfinedTestDispatcher()
 
     private fun dataStore(file: File = temporaryFolder.newFile("settings.preferences_pb")): DataStore<Preferences> {
-        file.delete() // DataStore creates the file itself; an existing empty file is not a valid store.
+        file.delete()
         return PreferenceDataStoreFactory.create(
             scope = CoroutineScope(dispatcher + SupervisorJob()),
             produceFile = { file },

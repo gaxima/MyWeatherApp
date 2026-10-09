@@ -32,7 +32,6 @@ class ThemeRepositoryImpl @Inject constructor(
             .distinctUntilChanged()
             .flowOn(dispatcher)
 
-    // Not safeCall: its IOException -> DomainError.Network mapping would mislabel a disk failure.
     override suspend fun setThemeMode(mode: ThemeMode): Result<Unit> = withContext(dispatcher) {
         try {
             dataStore.edit { it[THEME_MODE_KEY] = mode.name }

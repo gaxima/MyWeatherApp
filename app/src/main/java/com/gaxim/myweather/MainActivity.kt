@@ -25,7 +25,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeState by themeViewModel.uiState.collectAsStateWithLifecycle()
             when (val state = themeState) {
-                // Draw nothing until the saved theme is known, so a dark-mode user never sees a light flash.
                 ThemeUiState.Loading -> Unit
                 is ThemeUiState.Loaded -> MyWeatherTheme(darkTheme = state.mode.isDark()) {
                     AppNavHost(

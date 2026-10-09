@@ -11,10 +11,16 @@ import com.gaxim.myweather.presentation.navigation.RankingRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class RankingViewModel @Inject constructor(
@@ -27,6 +33,9 @@ class RankingViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<RankingUiState>(RankingUiState.Loading(city))
     val uiState: StateFlow<RankingUiState> = _uiState.asStateFlow()
 
+    private val _events = Channel<RankingEvent>(Channel.BUFFERED)
+    val events: Flow<RankingEvent> = _events.receiveAsFlow()
+
     private var loadJob: Job? = null
 
     init {
@@ -34,6 +43,35 @@ class RankingViewModel @Inject constructor(
     }
 
     fun retry() = load()
+
+    /**
+     * Reloads the forecast while keeping the current days on screen. A failure keeps them too and
+     * is reported as a [RankingEvent.RefreshFailed]. Ignored unless a forecast is already showing.
+     */
+    fun refresh() {
+        val days = when (val current = _uiState.value) {
+            is RankingUiState.Success -> current.days
+            is RankingUiState.Refreshing -> current.days
+            else -> return
+        }
+        val city = city ?: return
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            _uiState.value = RankingUiState.Refreshing(city, days)
+            // Keep the indicator up long enough to be noticed even when the request is instant.
+            val result = coroutineScope {
+                val minDisplay = launch { delay(REFRESH_MIN_DISPLAY_MILLIS.milliseconds) }
+                getActivityRanking(city).also { minDisplay.join() }
+            }
+            result.fold(
+                onSuccess = { _uiState.value = RankingUiState.Success(city, it) },
+                onFailure = {
+                    _uiState.value = RankingUiState.Success(city, days)
+                    _events.send(RankingEvent.RefreshFailed(it.toErrorKind()))
+                },
+            )
+        }
+    }
 
     private fun load() {
         val city = city
@@ -50,5 +88,13 @@ class RankingViewModel @Inject constructor(
                 onFailure = { RankingUiState.Error(city, it.toErrorKind()) },
             )
         }
+    }
+
+    companion object {
+        /**
+         * Shortest time [RankingUiState.Refreshing] stays on screen. Below roughly half a second a
+         * loading indicator reads as a flicker; a slower request is never delayed further.
+         */
+        const val REFRESH_MIN_DISPLAY_MILLIS = 700L
     }
 }

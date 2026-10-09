@@ -15,7 +15,10 @@ import com.gaxim.myweather.presentation.common.ErrorKind
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -32,6 +35,10 @@ class RankingViewModelTest {
     private val dispatcher = StandardTestDispatcher()
     private val repository = FakeForecastRepository()
     private val oslo = city()
+
+    private companion object {
+        const val MIN_DISPLAY = RankingViewModel.REFRESH_MIN_DISPLAY_MILLIS
+    }
 
     @Before
     fun setUp() = Dispatchers.setMain(dispatcher)
@@ -139,6 +146,144 @@ class RankingViewModelTest {
 
             assertEquals(bare, viewModel.uiState.value.city)
         }
+
+    @Test
+    fun `given a forecast, when refreshed, then old days stay visible until new ones arrive`() =
+        runTest(dispatcher) {
+            repository.result = Result.success(listOf(forecast()))
+            val viewModel = viewModel()
+            runCurrent()
+            val first = viewModel.uiState.value as RankingUiState.Success
+
+            repository.result = Result.success(listOf(forecast(), forecast()))
+            viewModel.uiState.test {
+                assertEquals(first, awaitItem())
+
+                viewModel.refresh()
+                runCurrent()
+
+                assertEquals(RankingUiState.Refreshing(oslo, first.days), awaitItem())
+                advanceTimeBy(MIN_DISPLAY)
+                runCurrent()
+                assertEquals(2, (awaitItem() as RankingUiState.Success).days.size)
+            }
+        }
+
+    @Test
+    fun `given a forecast, when refresh fails, then old days are kept and an event is emitted`() =
+        runTest(dispatcher) {
+            repository.result = Result.success(listOf(forecast()))
+            val viewModel = viewModel()
+            runCurrent()
+            val first = viewModel.uiState.value
+
+            repository.result = Result.failure(DomainError.Network())
+            viewModel.events.test {
+                viewModel.refresh()
+                advanceTimeBy(MIN_DISPLAY)
+                runCurrent()
+
+                assertEquals(RankingEvent.RefreshFailed(ErrorKind.NETWORK), awaitItem())
+            }
+            assertEquals(first, viewModel.uiState.value)
+        }
+
+    @Test
+    fun `given a fast refresh, when it answers early, then refreshing stays until the minimum time`() =
+        runTest(dispatcher) {
+            repository.result = Result.success(listOf(forecast()))
+            val viewModel = viewModel()
+            runCurrent()
+
+            viewModel.refresh()
+            runCurrent()
+            advanceTimeBy(MIN_DISPLAY - 1)
+            runCurrent()
+            assertTrue(viewModel.uiState.value is RankingUiState.Refreshing)
+
+            advanceTimeBy(1)
+            runCurrent()
+            assertTrue(viewModel.uiState.value is RankingUiState.Success)
+        }
+
+    @Test
+    fun `given a slow refresh, when it answers after the minimum, then it is not delayed further`() =
+        runTest(dispatcher) {
+            val slow = LatencyForecastRepository(Result.success(listOf(forecast())))
+            val viewModel = viewModel(repository = slow)
+            runCurrent()
+            slow.latencyMillis = MIN_DISPLAY * 2
+
+            viewModel.refresh()
+            runCurrent()
+            advanceTimeBy(MIN_DISPLAY * 2 - 1)
+            runCurrent()
+            assertTrue(viewModel.uiState.value is RankingUiState.Refreshing)
+
+            advanceTimeBy(1)
+            runCurrent()
+            assertTrue(viewModel.uiState.value is RankingUiState.Success)
+        }
+
+    @Test
+    fun `given a fast failing refresh, when it fails early, then the event waits for the minimum time`() =
+        runTest(dispatcher) {
+            repository.result = Result.success(listOf(forecast()))
+            val viewModel = viewModel()
+            runCurrent()
+
+            repository.result = Result.failure(DomainError.Network())
+            viewModel.events.test {
+                viewModel.refresh()
+                runCurrent()
+                assertTrue(viewModel.uiState.value is RankingUiState.Refreshing)
+                expectNoEvents()
+
+                advanceTimeBy(MIN_DISPLAY)
+                runCurrent()
+                assertEquals(RankingEvent.RefreshFailed(ErrorKind.NETWORK), awaitItem())
+            }
+            assertTrue(viewModel.uiState.value is RankingUiState.Success)
+        }
+
+    @Test
+    fun `given the screen is not showing a forecast, when refreshed, then nothing is fetched`() =
+        runTest(dispatcher) {
+            repository.result = Result.failure(DomainError.Timeout())
+            val viewModel = viewModel()
+            runCurrent()
+
+            viewModel.refresh()
+            runCurrent()
+
+            assertEquals(RankingUiState.Error(oslo, ErrorKind.TIMEOUT), viewModel.uiState.value)
+            assertEquals(listOf(oslo), repository.requestedCities)
+        }
+
+    @Test
+    fun `given a refresh in flight, when refreshed again, then the first one is cancelled`() =
+        runTest(dispatcher) {
+            repository.result = Result.success(listOf(forecast()))
+            val viewModel = viewModel()
+            runCurrent()
+
+            viewModel.refresh()
+            viewModel.refresh()
+            advanceUntilIdle()
+
+            assertTrue(viewModel.uiState.value is RankingUiState.Success)
+            assertEquals(2, repository.requestedCities.size)
+        }
+
+    private class LatencyForecastRepository(
+        private val result: Result<List<DailyForecast>>,
+        var latencyMillis: Long = 0,
+    ) : ForecastRepository {
+        override suspend fun getForecast(city: City): Result<List<DailyForecast>> {
+            delay(latencyMillis)
+            return result
+        }
+    }
 
     private class GatedForecastRepository(
         private val gate: CompletableDeferred<Result<List<DailyForecast>>>,

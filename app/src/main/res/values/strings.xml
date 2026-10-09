@@ -13,6 +13,7 @@
     <string name="ranking_back">Back</string>
     <string name="ranking_retry">Try again</string>
     <string name="ranking_score">%1$d / 100</string>
+    <string name="ranking_refreshing">Refreshing</string>
     <string name="ranking_ignored_factors">Not considered (no data): %1$s</string>
 
     <!-- Activities -->

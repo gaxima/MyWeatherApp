@@ -1,5 +1,12 @@
 package com.gaxim.myweather.presentation.ranking
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.StartOffset
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,8 +15,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,10 +31,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -109,39 +122,44 @@ private fun RankingList(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(days, key = { it.date.toString() }) { day -> DayRankingCard(day) }
+            items(days, key = { it.date.toString() }) { day -> DayRankingCard(day, isRefreshing) }
         }
     }
 }
 
 @Composable
-fun DayRankingCard(day: DayRanking, modifier: Modifier = Modifier) {
+fun DayRankingCard(day: DayRanking, isRefreshing: Boolean, modifier: Modifier = Modifier) {
     Card(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
                 text = day.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
                 style = MaterialTheme.typography.titleMedium,
             )
-            day.scores.forEach { ActivityScoreRow(it) }
+            day.scores.forEach { ActivityScoreRow(it, isRefreshing) }
         }
     }
 }
 
 @Composable
-fun ActivityScoreRow(score: ActivityScore, modifier: Modifier = Modifier) {
+fun ActivityScoreRow(score: ActivityScore, isRefreshing: Boolean, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = stringResource(score.activity.labelRes()),
                 style = MaterialTheme.typography.bodyLarge,
             )
-            Text(
-                text = stringResource(R.string.ranking_score, score.score),
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            if (isRefreshing) {
+                LoadingDots()
+            } else {
+                Text(
+                    text = stringResource(R.string.ranking_score, score.score),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
         }
         Text(
             text = stringResource(score.reason.textRes()),
@@ -159,7 +177,43 @@ fun ActivityScoreRow(score: ActivityScore, modifier: Modifier = Modifier) {
     }
 }
 
-private val previewCity = City("Zurich", "Switzerland", "Zurich", 47.37, 8.54)
+private const val DOT_COUNT = 3
+private const val DOT_PULSE_MILLIS = 600
+private const val DOT_STAGGER_MILLIS = 200
+private const val DOT_MIN_ALPHA = 0.25f
+private val DotSize = 6.dp
+
+/** Three dots pulsing in sequence; signals that a value is being fetched again. */
+@Composable
+private fun LoadingDots(modifier: Modifier = Modifier) {
+    val description = stringResource(R.string.ranking_refreshing)
+    val transition = rememberInfiniteTransition(label = "loadingDots")
+    Row(
+        modifier = modifier.semantics { contentDescription = description },
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        repeat(DOT_COUNT) { index ->
+            val alpha by transition.animateFloat(
+                initialValue = DOT_MIN_ALPHA,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(DOT_PULSE_MILLIS),
+                    repeatMode = RepeatMode.Reverse,
+                    initialStartOffset = StartOffset(index * DOT_STAGGER_MILLIS),
+                ),
+                label = "dot$index",
+            )
+            Box(
+                Modifier
+                    .size(DotSize)
+                    .alpha(alpha)
+                    .background(MaterialTheme.colorScheme.onSurfaceVariant, CircleShape),
+            )
+        }
+    }
+}
+
+private val previewCity =City("Zurich", "Switzerland", "Zurich", 47.37, 8.54)
 
 private val previewDay = DayRanking(
     date = LocalDate.of(2026, 1, 15),
@@ -197,6 +251,14 @@ private fun RankingScreenPreview(
 @Composable
 private fun DayRankingCardPreview() {
     MyWeatherTheme {
-        DayRankingCard(previewDay)
+        DayRankingCard(previewDay, isRefreshing = false)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DayRankingCardRefreshingPreview() {
+    MyWeatherTheme {
+        DayRankingCard(previewDay, isRefreshing = true)
     }
 }

@@ -6,10 +6,12 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.gaxim.myweather.di.IoDispatcher
+import com.gaxim.myweather.domain.model.DomainError
 import com.gaxim.myweather.domain.model.ThemeMode
 import com.gaxim.myweather.domain.repository.ThemeRepository
 import java.io.IOException
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -35,9 +37,15 @@ class ThemeRepositoryImpl @Inject constructor(
             .distinctUntilChanged()
             .flowOn(dispatcher)
 
-    override suspend fun setThemeMode(mode: ThemeMode) {
-        withContext(dispatcher) {
+    // Not safeCall: its IOException -> DomainError.Network mapping would mislabel a disk failure.
+    override suspend fun setThemeMode(mode: ThemeMode): Result<Unit> = withContext(dispatcher) {
+        try {
             dataStore.edit { it[THEME_MODE_KEY] = mode.name }
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(DomainError.Unknown(e))
         }
     }
 

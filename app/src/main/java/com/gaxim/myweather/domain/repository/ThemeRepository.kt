@@ -7,5 +7,6 @@ interface ThemeRepository {
     /** Emits the saved mode, [ThemeMode.System] when nothing valid is saved, and every later change. */
     fun observeThemeMode(): Flow<ThemeMode>
 
-    suspend fun setThemeMode(mode: ThemeMode)
+    /** Saves [mode]. A failure to write is reported as a failed [Result], never thrown. */
+    suspend fun setThemeMode(mode: ThemeMode): Result<Unit>
 }

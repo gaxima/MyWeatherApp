@@ -6,15 +6,19 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import app.cash.turbine.test
+import com.gaxim.myweather.domain.model.DomainError
 import com.gaxim.myweather.domain.model.ThemeMode
 import java.io.File
+import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -74,5 +78,20 @@ class ThemeRepositoryImplTest {
             store.edit { it[stringPreferencesKey("theme_mode")] = "Sepia" }
 
             assertEquals(ThemeMode.System, repository(store).observeThemeMode().first())
+        }
+
+    @Test
+    fun `given a store that cannot write, when saving, then the failure is returned not thrown`() =
+        runTest(dispatcher) {
+            val brokenStore = object : DataStore<Preferences> {
+                override val data = emptyFlow<Preferences>()
+                override suspend fun updateData(
+                    transform: suspend (t: Preferences) -> Preferences,
+                ): Preferences = throw IOException("disk full")
+            }
+
+            val result = ThemeRepositoryImpl(brokenStore, dispatcher).setThemeMode(ThemeMode.Dark)
+
+            assertTrue(result.exceptionOrNull() is DomainError.Unknown)
         }
 }

@@ -53,7 +53,6 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.datastore.preferences)
-    // Overrides the 16 KB-misaligned 1.0.1 that Compose pulls in; drop once Compose requires 1.1.0+.
     implementation(libs.androidx.graphics.path)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

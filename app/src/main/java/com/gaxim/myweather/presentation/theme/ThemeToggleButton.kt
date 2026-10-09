@@ -1,4 +1,4 @@
-package com.gaxim.myweather.presentation.ui.theme
+package com.gaxim.myweather.presentation.theme
 
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton

@@ -26,8 +26,8 @@ import com.gaxim.myweather.presentation.ranking.RankingViewModel
 import com.gaxim.myweather.presentation.search.SearchEvent
 import com.gaxim.myweather.presentation.search.SearchScreen
 import com.gaxim.myweather.presentation.search.SearchViewModel
+import com.gaxim.myweather.presentation.theme.ThemeToggleButton
 import com.gaxim.myweather.presentation.ui.messageRes
-import com.gaxim.myweather.presentation.ui.theme.ThemeToggleButton
 
 /** Wires the two screens to their ViewModels and to each other. */
 @OptIn(ExperimentalMaterial3Api::class)

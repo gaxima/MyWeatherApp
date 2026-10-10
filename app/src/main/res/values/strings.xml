@@ -8,6 +8,10 @@
     <string name="search_empty">No city matches \"%1$s\".</string>
     <string name="search_clear">Clear</string>
 
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_theme_label">Theme</string>
+
     <!-- Theme -->
     <string name="theme_system">System theme</string>
     <string name="theme_light">Light mode</string>

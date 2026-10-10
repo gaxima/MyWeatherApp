@@ -21,15 +21,7 @@ class ThemeViewModel @Inject constructor(
         .map<ThemeMode, ThemeUiState> { ThemeUiState.Loaded(it) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, ThemeUiState.Loading)
 
-    fun onToggleTheme() {
-        val current = (uiState.value as? ThemeUiState.Loaded)?.mode ?: return
-        viewModelScope.launch { themeRepository.setThemeMode(current.next()) }
+    fun onThemeSelected(mode: ThemeMode) {
+        viewModelScope.launch { themeRepository.setThemeMode(mode) }
     }
-
-    private fun ThemeMode.next(): ThemeMode =
-        when (this) {
-            ThemeMode.System -> ThemeMode.Light
-            ThemeMode.Light -> ThemeMode.Dark
-            ThemeMode.Dark -> ThemeMode.System
-        }
 }

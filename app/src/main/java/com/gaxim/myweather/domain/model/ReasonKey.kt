@@ -6,6 +6,7 @@ package com.gaxim.myweather.domain.model
  */
 enum class ReasonKey {
     SKI_FRESH_SNOW,
+    SKI_NO_SNOW,
     SKI_LITTLE_FRESH_SNOW,
     SKI_TOO_WARM,
     SURF_RIDEABLE_WIND,

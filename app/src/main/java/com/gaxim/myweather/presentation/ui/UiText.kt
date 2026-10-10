@@ -21,6 +21,7 @@ fun Activity.labelRes(): Int = when (this) {
 @StringRes
 fun ReasonKey.textRes(): Int = when (this) {
     ReasonKey.SKI_FRESH_SNOW -> R.string.reason_ski_fresh_snow
+    ReasonKey.SKI_NO_SNOW -> R.string.reason_ski_no_snow
     ReasonKey.SKI_LITTLE_FRESH_SNOW -> R.string.reason_ski_little_fresh_snow
     ReasonKey.SKI_TOO_WARM -> R.string.reason_ski_too_warm
     ReasonKey.SURF_RIDEABLE_WIND -> R.string.reason_surf_rideable_wind

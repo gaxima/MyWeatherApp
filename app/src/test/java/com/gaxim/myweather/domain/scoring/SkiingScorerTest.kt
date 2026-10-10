@@ -39,6 +39,24 @@ class SkiingScorerTest {
     }
 
     @Test
+    fun `given no snowfall but calm cold day, when scoring skiing, then score is zero and reason is no snow`() {
+        val result = SkiingScorer.score(idealDay.copy(snowfallSum = 0.0))
+
+        assertEquals(0, result.score)
+        assertEquals(ReasonKey.SKI_NO_SNOW, result.reason)
+    }
+
+    @Test
+    fun `given tropical day with no snowfall, when scoring skiing, then score is zero`() {
+        val result = SkiingScorer.score(
+            forecast(temperatureMax = 30.0, snowfallSum = 0.0, windSpeedMax = 10.0, windGustsMax = 20.0),
+        )
+
+        assertEquals(0, result.score)
+        assertEquals(ReasonKey.SKI_NO_SNOW, result.reason)
+    }
+
+    @Test
     fun `given snowfall exactly at ideal, when scoring, then snow counts fully`() {
         val result = SkiingScorer.score(idealDay)
 

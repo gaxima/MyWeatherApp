@@ -16,7 +16,7 @@ internal object SkiingThresholds {
     const val WIND_WEIGHT = 20.0
     const val GUST_WEIGHT = 10.0
 
-    /** No fresh snow earns no snowfall points. */
+    /** Daily snowfall at or below this means no skiing: the whole score is 0, whatever the wind. */
     const val SNOWFALL_NONE_CM = 0.0
 
     /** Daily snowfall at or above this earns full snowfall points and counts as "fresh snow". */
@@ -39,49 +39,52 @@ internal object SkiingThresholds {
 object SkiingScorer : ActivityScorer {
 
     override fun score(forecast: DailyForecast): ActivityScore {
-        val t = SkiingThresholds
+        val skiingThresholds = SkiingThresholds
         val builder = ScoreBuilder()
         builder.factor(
             WeatherFactor.SNOWFALL,
-            t.SNOWFALL_WEIGHT,
-            ramp(forecast.snowfallSum, t.SNOWFALL_NONE_CM, t.SNOWFALL_IDEAL_CM),
+            skiingThresholds.SNOWFALL_WEIGHT,
+            ramp(forecast.snowfallSum, skiingThresholds.SNOWFALL_NONE_CM, skiingThresholds.SNOWFALL_IDEAL_CM),
         )
         builder.factor(
             WeatherFactor.TEMPERATURE,
-            t.TEMPERATURE_WEIGHT,
-            ramp(forecast.temperatureMax, t.TEMP_WARM_LIMIT_C, t.TEMP_IDEAL_MAX_C),
+            skiingThresholds.TEMPERATURE_WEIGHT,
+            ramp(forecast.temperatureMax, skiingThresholds.TEMP_WARM_LIMIT_C, skiingThresholds.TEMP_IDEAL_MAX_C),
         )
         builder.factor(
             WeatherFactor.WIND_SPEED,
-            t.WIND_WEIGHT,
-            ramp(forecast.windSpeedMax, t.WIND_LIMIT_KMH, t.WIND_IDEAL_KMH),
+            skiingThresholds.WIND_WEIGHT,
+            ramp(forecast.windSpeedMax, skiingThresholds.WIND_LIMIT_KMH, skiingThresholds.WIND_IDEAL_KMH),
         )
         builder.factor(
             WeatherFactor.WIND_GUSTS,
-            t.GUST_WEIGHT,
-            ramp(forecast.windGustsMax, t.GUST_LIMIT_KMH, t.GUST_IDEAL_KMH),
+            skiingThresholds.GUST_WEIGHT,
+            ramp(forecast.windGustsMax, skiingThresholds.GUST_LIMIT_KMH, skiingThresholds.GUST_IDEAL_KMH),
         )
         return ActivityScore(
             activity = Activity.SKIING,
-            score = builder.score(),
+            score = if (hasNoSnow(forecast)) 0 else builder.score(),
             reason = reasonFor(forecast),
             missingFactors = builder.missingFactors,
         )
     }
 
-    /** First matching rule wins: blockers (wind, warmth) outrank snow quality. */
+    private fun hasNoSnow(forecast: DailyForecast): Boolean =
+        forecast.snowfallSum?.let { it <= SkiingThresholds.SNOWFALL_NONE_CM } == true
+
     private fun reasonFor(forecast: DailyForecast): ReasonKey {
-        val t = SkiingThresholds
+        val skiingThresholds = SkiingThresholds
         val wind = forecast.windSpeedMax
         val gusts = forecast.windGustsMax
         val tempMax = forecast.temperatureMax
         val snow = forecast.snowfallSum
         return when {
-            wind != null && wind >= t.WIND_LIMIT_KMH -> ReasonKey.STRONG_WIND
-            gusts != null && gusts >= t.GUST_LIMIT_KMH -> ReasonKey.STRONG_WIND
-            tempMax != null && tempMax >= t.TEMP_WARM_LIMIT_C -> ReasonKey.SKI_TOO_WARM
+            hasNoSnow(forecast) -> ReasonKey.SKI_NO_SNOW
+            wind != null && wind >= skiingThresholds.WIND_LIMIT_KMH -> ReasonKey.STRONG_WIND
+            gusts != null && gusts >= skiingThresholds.GUST_LIMIT_KMH -> ReasonKey.STRONG_WIND
+            tempMax != null && tempMax >= skiingThresholds.TEMP_WARM_LIMIT_C -> ReasonKey.SKI_TOO_WARM
             snow == null -> ReasonKey.INSUFFICIENT_DATA
-            snow >= t.SNOWFALL_IDEAL_CM -> ReasonKey.SKI_FRESH_SNOW
+            snow >= skiingThresholds.SNOWFALL_IDEAL_CM -> ReasonKey.SKI_FRESH_SNOW
             else -> ReasonKey.SKI_LITTLE_FRESH_SNOW
         }
     }

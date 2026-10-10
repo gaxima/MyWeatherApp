@@ -43,3 +43,6 @@ data class RankingRoute(
         }
     }
 }
+
+@Serializable
+data object SettingsRoute

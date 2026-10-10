@@ -18,7 +18,7 @@ fun AppBottomBar(
         TopLevelDestination.entries.forEach { destination ->
             NavigationBarItem(
                 selected = destination == selected,
-                onClick = { onSelect(destination) },
+                onClick = { if (destination != selected) onSelect(destination) },
                 icon = { Icon(imageVector = destination.icon, contentDescription = null) },
                 label = { Text(stringResource(destination.labelRes)) },
             )

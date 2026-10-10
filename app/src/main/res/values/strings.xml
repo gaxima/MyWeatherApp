@@ -30,6 +30,7 @@
 
     <!-- Reasons -->
     <string name="reason_ski_fresh_snow">Fresh snow and cold enough to keep it</string>
+    <string name="reason_ski_no_snow">No snow for the day</string>
     <string name="reason_ski_little_fresh_snow">Cold enough, but little fresh snow</string>
     <string name="reason_ski_too_warm">Too warm, snow will melt</string>
     <string name="reason_surf_rideable_wind">Wind should give rideable surf</string>

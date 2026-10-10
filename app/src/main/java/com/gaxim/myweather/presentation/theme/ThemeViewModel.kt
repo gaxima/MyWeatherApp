@@ -26,6 +26,10 @@ class ThemeViewModel @Inject constructor(
         viewModelScope.launch { themeRepository.setThemeMode(current.next()) }
     }
 
+    fun onThemeSelected(mode: ThemeMode) {
+        viewModelScope.launch { themeRepository.setThemeMode(mode) }
+    }
+
     private fun ThemeMode.next(): ThemeMode =
         when (this) {
             ThemeMode.System -> ThemeMode.Light

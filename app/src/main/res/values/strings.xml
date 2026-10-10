@@ -20,7 +20,6 @@
     <string name="theme_system">System theme</string>
     <string name="theme_light">Light mode</string>
     <string name="theme_dark">Dark mode</string>
-    <string name="theme_toggle_description">Theme: %1$s. Tap to change.</string>
 
     <!-- Ranking -->
     <string name="ranking_title">Activities in %1$s</string>

@@ -71,52 +71,6 @@ class ThemeViewModelTest {
     }
 
     @Test
-    fun `given system, when toggled three times, then it cycles light dark system and saves each`() =
-        runTest(dispatcher) {
-            val repository = FakeThemeRepository()
-            val viewModel = ThemeViewModel(repository)
-            viewModel.uiState.test {
-                assertEquals(ThemeUiState.Loading, awaitItem())
-                assertEquals(ThemeUiState.Loaded(ThemeMode.System), awaitItem())
-
-                listOf(ThemeMode.Light, ThemeMode.Dark, ThemeMode.System).forEach { expected ->
-                    viewModel.onToggleTheme()
-                    runCurrent()
-                    assertEquals(ThemeUiState.Loaded(expected), awaitItem())
-                }
-            }
-            assertEquals(
-                listOf(ThemeMode.Light, ThemeMode.Dark, ThemeMode.System),
-                repository.saveAttempts,
-            )
-        }
-
-    @Test
-    fun `given saving fails, when toggled, then state keeps the stored mode and nothing crashes`() =
-        runTest(dispatcher) {
-            val repository = FakeThemeRepository(ThemeMode.Light, failOnSave = true)
-            val viewModel = ThemeViewModel(repository)
-            runCurrent()
-
-            viewModel.onToggleTheme()
-            runCurrent()
-
-            assertEquals(listOf(ThemeMode.Dark), repository.saveAttempts)
-            assertEquals(ThemeUiState.Loaded(ThemeMode.Light), viewModel.uiState.value)
-        }
-
-    @Test
-    fun `given the mode is not loaded, when toggled, then nothing is saved`() = runTest(dispatcher) {
-        val repository = FakeThemeRepository()
-        val viewModel = ThemeViewModel(repository)
-
-        viewModel.onToggleTheme()
-        runCurrent()
-
-        assertEquals(emptyList<ThemeMode>(), repository.saveAttempts)
-    }
-
-    @Test
     fun `given a loaded mode, when another mode is selected, then it is saved and exposed`() =
         runTest(dispatcher) {
             val repository = FakeThemeRepository(ThemeMode.Light)

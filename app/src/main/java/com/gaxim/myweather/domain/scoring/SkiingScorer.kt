@@ -39,27 +39,27 @@ internal object SkiingThresholds {
 object SkiingScorer : ActivityScorer {
 
     override fun score(forecast: DailyForecast): ActivityScore {
-        val t = SkiingThresholds
+        val skiingThresholds = SkiingThresholds
         val builder = ScoreBuilder()
         builder.factor(
             WeatherFactor.SNOWFALL,
-            t.SNOWFALL_WEIGHT,
-            ramp(forecast.snowfallSum, t.SNOWFALL_NONE_CM, t.SNOWFALL_IDEAL_CM),
+            skiingThresholds.SNOWFALL_WEIGHT,
+            ramp(forecast.snowfallSum, skiingThresholds.SNOWFALL_NONE_CM, skiingThresholds.SNOWFALL_IDEAL_CM),
         )
         builder.factor(
             WeatherFactor.TEMPERATURE,
-            t.TEMPERATURE_WEIGHT,
-            ramp(forecast.temperatureMax, t.TEMP_WARM_LIMIT_C, t.TEMP_IDEAL_MAX_C),
+            skiingThresholds.TEMPERATURE_WEIGHT,
+            ramp(forecast.temperatureMax, skiingThresholds.TEMP_WARM_LIMIT_C, skiingThresholds.TEMP_IDEAL_MAX_C),
         )
         builder.factor(
             WeatherFactor.WIND_SPEED,
-            t.WIND_WEIGHT,
-            ramp(forecast.windSpeedMax, t.WIND_LIMIT_KMH, t.WIND_IDEAL_KMH),
+            skiingThresholds.WIND_WEIGHT,
+            ramp(forecast.windSpeedMax, skiingThresholds.WIND_LIMIT_KMH, skiingThresholds.WIND_IDEAL_KMH),
         )
         builder.factor(
             WeatherFactor.WIND_GUSTS,
-            t.GUST_WEIGHT,
-            ramp(forecast.windGustsMax, t.GUST_LIMIT_KMH, t.GUST_IDEAL_KMH),
+            skiingThresholds.GUST_WEIGHT,
+            ramp(forecast.windGustsMax, skiingThresholds.GUST_LIMIT_KMH, skiingThresholds.GUST_IDEAL_KMH),
         )
         return ActivityScore(
             activity = Activity.SKIING,

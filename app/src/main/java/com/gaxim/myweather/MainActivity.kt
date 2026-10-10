@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
                 is ThemeUiState.Loaded -> MyWeatherTheme(darkTheme = state.mode.isDark()) {
                     AppNavHost(
                         themeMode = state.mode,
-                        onToggleTheme = themeViewModel::onToggleTheme,
+                        onThemeSelected = themeViewModel::onThemeSelected,
                     )
                 }
             }

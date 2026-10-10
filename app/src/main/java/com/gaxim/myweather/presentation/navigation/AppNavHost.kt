@@ -13,6 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavHostController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
@@ -26,14 +28,14 @@ import com.gaxim.myweather.presentation.ranking.RankingViewModel
 import com.gaxim.myweather.presentation.search.SearchEvent
 import com.gaxim.myweather.presentation.search.SearchScreen
 import com.gaxim.myweather.presentation.search.SearchViewModel
-import com.gaxim.myweather.presentation.theme.ThemeToggleButton
+import com.gaxim.myweather.presentation.settings.SettingsScreen
 import com.gaxim.myweather.presentation.ui.messageRes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(
     themeMode: ThemeMode,
-    onToggleTheme: () -> Unit,
+    onThemeSelected: (ThemeMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
@@ -55,7 +57,12 @@ fun AppNavHost(
                 topBar = {
                     TopAppBar(
                         title = { Text(stringResource(R.string.search_title)) },
-                        actions = { ThemeToggleButton(mode = themeMode, onToggle = onToggleTheme) },
+                    )
+                },
+                bottomBar = {
+                    AppBottomBar(
+                        selected = TopLevelDestination.Search,
+                        onSelect = navController::navigateToTopLevel,
                     )
                 },
             ) { innerPadding ->
@@ -63,6 +70,25 @@ fun AppNavHost(
                     state = state,
                     onQueryChange = viewModel::onQueryChanged,
                     onCityClick = viewModel::onCitySelected,
+                    modifier = Modifier.padding(innerPadding),
+                )
+            }
+        }
+        composable<SettingsRoute> {
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text(stringResource(R.string.settings_title)) })
+                },
+                bottomBar = {
+                    AppBottomBar(
+                        selected = TopLevelDestination.Settings,
+                        onSelect = navController::navigateToTopLevel,
+                    )
+                },
+            ) { innerPadding ->
+                SettingsScreen(
+                    themeMode = themeMode,
+                    onThemeSelected = onThemeSelected,
                     modifier = Modifier.padding(innerPadding),
                 )
             }
@@ -91,5 +117,13 @@ fun AppNavHost(
                 snackbarHostState = snackbarHostState,
             )
         }
+    }
+}
+
+private fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
+    navigate(destination.route) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
 }

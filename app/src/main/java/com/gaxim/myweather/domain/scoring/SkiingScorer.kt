@@ -73,18 +73,18 @@ object SkiingScorer : ActivityScorer {
         forecast.snowfallSum?.let { it <= SkiingThresholds.SNOWFALL_NONE_CM } == true
 
     private fun reasonFor(forecast: DailyForecast): ReasonKey {
-        val t = SkiingThresholds
+        val skiingThresholds = SkiingThresholds
         val wind = forecast.windSpeedMax
         val gusts = forecast.windGustsMax
         val tempMax = forecast.temperatureMax
         val snow = forecast.snowfallSum
         return when {
             hasNoSnow(forecast) -> ReasonKey.SKI_NO_SNOW
-            wind != null && wind >= t.WIND_LIMIT_KMH -> ReasonKey.STRONG_WIND
-            gusts != null && gusts >= t.GUST_LIMIT_KMH -> ReasonKey.STRONG_WIND
-            tempMax != null && tempMax >= t.TEMP_WARM_LIMIT_C -> ReasonKey.SKI_TOO_WARM
+            wind != null && wind >= skiingThresholds.WIND_LIMIT_KMH -> ReasonKey.STRONG_WIND
+            gusts != null && gusts >= skiingThresholds.GUST_LIMIT_KMH -> ReasonKey.STRONG_WIND
+            tempMax != null && tempMax >= skiingThresholds.TEMP_WARM_LIMIT_C -> ReasonKey.SKI_TOO_WARM
             snow == null -> ReasonKey.INSUFFICIENT_DATA
-            snow >= t.SNOWFALL_IDEAL_CM -> ReasonKey.SKI_FRESH_SNOW
+            snow >= skiingThresholds.SNOWFALL_IDEAL_CM -> ReasonKey.SKI_FRESH_SNOW
             else -> ReasonKey.SKI_LITTLE_FRESH_SNOW
         }
     }

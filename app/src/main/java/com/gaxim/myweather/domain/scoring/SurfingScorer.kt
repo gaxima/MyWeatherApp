@@ -23,7 +23,6 @@ internal object SurfingThresholds {
     /** At or below this wind there is effectively no surf (flat). */
     const val WIND_ZERO_LOW_KMH = 5.0
 
-    /** Ideal wind band: full wind points between these two values. */
     const val WIND_FULL_LOW_KMH = 15.0
     const val WIND_FULL_HIGH_KMH = 30.0
 

@@ -44,10 +44,7 @@ class RankingViewModel @Inject constructor(
 
     fun retry() = load()
 
-    /**
-     * Reloads the forecast while keeping the current days on screen. A failure keeps them too and
-     * is reported as a [RankingEvent.RefreshFailed]. Ignored unless a forecast is already showing.
-     */
+    /** Reloads without clearing the screen; a failure emits [RankingEvent.RefreshFailed]. */
     fun refresh() {
         val days = when (val current = _uiState.value) {
             is RankingUiState.Success -> current.days
@@ -91,10 +88,7 @@ class RankingViewModel @Inject constructor(
     }
 
     companion object {
-        /**
-         * Shortest time [RankingUiState.Refreshing] stays on screen. Below roughly half a second a
-         * loading indicator reads as a flicker; a slower request is never delayed further.
-         */
+        /** Minimum time the refresh indicator stays up, to avoid a flicker. */
         const val REFRESH_MIN_DISPLAY_MILLIS = 700L
     }
 }

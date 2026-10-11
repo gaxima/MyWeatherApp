@@ -31,11 +31,7 @@ class SearchViewModel @Inject constructor(
 
     private var searchJob: Job? = null
 
-    /**
-     * Updates the field text right away and searches once the user pauses for [DEBOUNCE_MILLIS].
-     * A newer keystroke cancels the pending or in-flight search, so a slow earlier response can
-     * never overwrite a newer one.
-     */
+    /** A newer keystroke cancels the pending or in-flight search. */
     fun onQueryChanged(query: String) {
         searchJob?.cancel()
         if (query.isBlank()) {
@@ -61,7 +57,6 @@ class SearchViewModel @Inject constructor(
     }
 
     companion object {
-        /** How long the user must stop typing before a request is sent. */
         const val DEBOUNCE_MILLIS = 400L
     }
 }

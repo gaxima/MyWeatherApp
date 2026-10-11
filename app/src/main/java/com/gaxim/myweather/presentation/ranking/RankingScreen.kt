@@ -183,7 +183,6 @@ private const val DOT_STAGGER_MILLIS = 200
 private const val DOT_MIN_ALPHA = 0.25f
 private val DotSize = 6.dp
 
-/** Three dots pulsing in sequence; signals that a value is being fetched again. */
 @Composable
 private fun LoadingDots(modifier: Modifier = Modifier) {
     val description = stringResource(R.string.ranking_refreshing)

@@ -4,12 +4,7 @@ import com.gaxim.myweather.domain.model.City
 import com.gaxim.myweather.domain.repository.CityRepository
 import javax.inject.Inject
 
-/**
- * Finds cities matching a user-typed query.
- *
- * A blank query is a successful, empty result and never reaches the repository, so the UI
- * does not spend a request on an empty search box.
- */
+/** A blank query returns an empty success without reaching the repository. */
 class SearchCitiesUseCase @Inject constructor(
     private val cityRepository: CityRepository,
 ) {

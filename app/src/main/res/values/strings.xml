@@ -42,6 +42,7 @@
     <string name="reason_ski_too_warm">Too warm, snow will melt</string>
     <string name="reason_surf_rideable_wind">Wind should give rideable surf</string>
     <string name="reason_surf_too_calm">Too calm, likely flat</string>
+    <string name="reason_surf_choppy">Windy, surf may be choppy</string>
     <string name="reason_strong_wind">Strong wind</string>
     <string name="reason_storm">Thunderstorm expected</string>
     <string name="reason_rain">Rain expected</string>

@@ -11,6 +11,7 @@ enum class ReasonKey {
     SKI_TOO_WARM,
     SURF_RIDEABLE_WIND,
     SURF_TOO_CALM,
+    SURF_CHOPPY,
     STRONG_WIND,
     STORM,
     RAIN,

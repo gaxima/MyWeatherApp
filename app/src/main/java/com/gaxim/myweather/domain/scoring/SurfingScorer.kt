@@ -86,7 +86,11 @@ object SurfingScorer : ActivityScorer {
         )
     }
 
-    /** First matching rule wins: danger (storm, wind, rain) outranks wind quality. */
+    /**
+     * First matching rule wins: danger (storm, wind, rain) outranks wind quality. The wind reasons
+     * follow the wind band used for the score: too calm below it, choppy above it, strong wind
+     * only once the surf is blown out.
+     */
     private fun reasonFor(forecast: DailyForecast): ReasonKey {
         val t = SurfingThresholds
         val wind = forecast.windSpeedMax
@@ -94,11 +98,12 @@ object SurfingScorer : ActivityScorer {
         val precip = forecast.precipitationSum
         return when {
             WeatherCodes.isThunderstorm(forecast.weatherCode) -> ReasonKey.STORM
-            wind != null && wind > t.WIND_FULL_HIGH_KMH -> ReasonKey.STRONG_WIND
+            wind != null && wind >= t.WIND_ZERO_HIGH_KMH -> ReasonKey.STRONG_WIND
             gusts != null && gusts >= t.GUST_LIMIT_KMH -> ReasonKey.STRONG_WIND
             precip != null && precip >= t.PRECIP_LIMIT_MM -> ReasonKey.RAIN
             wind == null -> ReasonKey.INSUFFICIENT_DATA
             wind < t.WIND_FULL_LOW_KMH -> ReasonKey.SURF_TOO_CALM
+            wind > t.WIND_FULL_HIGH_KMH -> ReasonKey.SURF_CHOPPY
             else -> ReasonKey.SURF_RIDEABLE_WIND
         }
     }

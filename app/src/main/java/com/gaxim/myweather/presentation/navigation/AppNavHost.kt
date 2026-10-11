@@ -70,6 +70,7 @@ fun AppNavHost(
                     state = state,
                     onQueryChange = viewModel::onQueryChanged,
                     onCityClick = viewModel::onCitySelected,
+                    onRetry = viewModel::retry,
                     modifier = Modifier.padding(innerPadding),
                 )
             }

@@ -38,6 +38,7 @@ fun SearchScreen(
     state: SearchUiState,
     onQueryChange: (String) -> Unit,
     onCityClick: (City) -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
@@ -59,6 +60,7 @@ fun SearchScreen(
         SearchContent(
             state = state,
             onCityClick = onCityClick,
+            onRetry = onRetry,
             modifier = Modifier.fillMaxSize().padding(top = 16.dp),
         )
     }
@@ -68,6 +70,7 @@ fun SearchScreen(
 private fun SearchContent(
     state: SearchUiState,
     onCityClick: (City) -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (state) {
@@ -77,8 +80,18 @@ private fun SearchContent(
         }
         is SearchUiState.Empty ->
             CenteredMessage(stringResource(R.string.search_empty, state.query.trim()), modifier)
-        is SearchUiState.Error ->
-            CenteredMessage(stringResource(state.kind.messageRes()), modifier)
+        is SearchUiState.Error -> Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = stringResource(state.kind.messageRes()),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            TextButton(onClick = onRetry) { Text(stringResource(R.string.search_retry)) }
+        }
         is SearchUiState.Success -> LazyColumn(
             modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(0.dp),
@@ -126,6 +139,6 @@ private fun SearchScreenPreview(
     @PreviewParameter(SearchUiStateProvider::class) state: SearchUiState,
 ) {
     MyWeatherTheme {
-        SearchScreen(state = state, onQueryChange = {}, onCityClick = {})
+        SearchScreen(state = state, onQueryChange = {}, onCityClick = {}, onRetry = {})
     }
 }

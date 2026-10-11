@@ -7,6 +7,7 @@
     <string name="search_idle">Search for a city to see how the next 7 days rank for activities.</string>
     <string name="search_empty">No city matches \"%1$s\".</string>
     <string name="search_clear">Clear</string>
+    <string name="search_retry">Try again</string>
 
     <!-- Navigation -->
     <string name="nav_search">Search</string>

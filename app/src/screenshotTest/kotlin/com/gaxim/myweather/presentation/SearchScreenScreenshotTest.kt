@@ -16,7 +16,7 @@ private val cities = listOf(
 @Composable
 private fun SearchScreenshot(state: SearchUiState) {
     MyWeatherTheme {
-        SearchScreen(state = state, onQueryChange = {}, onCityClick = {})
+        SearchScreen(state = state, onQueryChange = {}, onCityClick = {}, onRetry = {})
     }
 }
 

@@ -160,6 +160,64 @@ class SearchViewModelTest {
     }
 
     @Test
+    fun `given an error, when retried, then the same query is searched again without debounce`() =
+        runTest(dispatcher) {
+            repository.result = Result.failure(DomainError.Network())
+            val viewModel = viewModel()
+            viewModel.onQueryChanged("Oslo")
+            pastDebounce()
+            val oslo = city()
+            repository.result = Result.success(listOf(oslo))
+
+            viewModel.retry()
+            runCurrent()
+
+            assertEquals(listOf("Oslo", "Oslo"), repository.queries)
+            assertEquals(SearchUiState.Success("Oslo", listOf(oslo)), viewModel.uiState.value)
+        }
+
+    @Test
+    fun `given an error, when retried, then state goes loading before the result`() =
+        runTest(dispatcher) {
+            val gate = CompletableDeferred<Result<List<City>>>()
+            val failing = FakeCityRepository(Result.failure(DomainError.Network()))
+            var current: CityRepository = failing
+            val viewModel = viewModel(
+                object : CityRepository {
+                    override suspend fun search(query: String) = current.search(query)
+                },
+            )
+            viewModel.onQueryChanged("Oslo")
+            pastDebounce()
+            current = GatedCityRepository(gate)
+
+            viewModel.uiState.test {
+                assertEquals(SearchUiState.Error("Oslo", ErrorKind.NETWORK), awaitItem())
+
+                viewModel.retry()
+                runCurrent()
+                assertEquals(SearchUiState.Loading("Oslo"), awaitItem())
+
+                gate.complete(Result.success(emptyList()))
+                runCurrent()
+                assertEquals(SearchUiState.Empty("Oslo"), awaitItem())
+            }
+        }
+
+    @Test
+    fun `given results are shown, when retried, then nothing is searched`() = runTest(dispatcher) {
+        repository.result = Result.success(listOf(city()))
+        val viewModel = viewModel()
+        viewModel.onQueryChanged("Oslo")
+        pastDebounce()
+
+        viewModel.retry()
+        runCurrent()
+
+        assertEquals(listOf("Oslo"), repository.queries)
+    }
+
+    @Test
     fun `given a city, when selected, then a navigate event is emitted once`() = runTest(dispatcher) {
         val viewModel = viewModel()
         val oslo = city()

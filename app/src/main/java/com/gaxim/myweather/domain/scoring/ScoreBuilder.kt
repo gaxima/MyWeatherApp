@@ -4,11 +4,8 @@ import com.gaxim.myweather.domain.model.WeatherFactor
 import kotlin.math.roundToInt
 
 /**
- * Combines weighted factors into a 0..100 score.
- *
- * Each factor contributes `weight * fraction`, where fraction is 0..1. A factor whose input is
- * missing (null fraction) is skipped: the remaining weights are renormalized and the factor is
- * recorded in [missingFactors] so the UI can disclose it.
+ * Sums `weight * fraction` per factor into a 0..100 score. A null fraction is skipped: the
+ * remaining weights are renormalized and the factor is recorded in [missingFactors].
  */
 internal class ScoreBuilder {
     private var earned = 0.0
@@ -37,17 +34,11 @@ internal class ScoreBuilder {
     }
 }
 
-/**
- * Linear 0..1 fraction of [value] between [worst] (0.0) and [best] (1.0), clamped.
- * Works in either direction, e.g. `ramp(wind, worst = 60.0, best = 20.0)`. Null stays null.
- */
+/** Linear 0..1 position of [value] between [worst] and [best], in either direction. */
 internal fun ramp(value: Double?, worst: Double, best: Double): Double? =
     value?.let { rampValue(it, worst, best) }
 
-/**
- * Trapezoid 0..1 fraction: 0 at or below [zeroLow], rising to 1 at [fullLow], flat to
- * [fullHigh], falling to 0 at [zeroHigh]. For factors where both too little and too much are bad.
- */
+/** Trapezoid for factors where both too little and too much are bad. */
 internal fun band(
     value: Double?,
     zeroLow: Double,

@@ -3,11 +3,8 @@ package com.gaxim.myweather.domain.model
 import java.time.LocalDate
 
 /**
- * Forecast for one calendar day at the city's local time.
- *
- * Every measurement is nullable because the provider may omit or null individual values.
- * Units follow the Open-Meteo defaults: temperatures in °C, precipitation in mm,
- * snowfall in cm, wind speeds in km/h, [weatherCode] as a WMO code.
+ * Measurements are nullable because the provider may omit them. Units follow the Open-Meteo
+ * defaults: °C, mm, cm (snowfall), km/h, and [weatherCode] as a WMO code.
  */
 data class DailyForecast(
     val date: LocalDate,

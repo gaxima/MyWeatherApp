@@ -7,7 +7,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.gaxim.myweather.R
 
-/** Destinations reachable from the bottom bar. */
 enum class TopLevelDestination(
     val route: Any,
     @StringRes val labelRes: Int,

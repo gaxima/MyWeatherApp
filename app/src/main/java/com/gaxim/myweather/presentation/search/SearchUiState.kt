@@ -7,14 +7,12 @@ import com.gaxim.myweather.presentation.common.ErrorKind
 sealed interface SearchUiState {
     val query: String
 
-    /** Nothing typed yet. */
     data class Idle(override val query: String = "") : SearchUiState
 
     data class Loading(override val query: String) : SearchUiState
 
     data class Success(override val query: String, val cities: List<City>) : SearchUiState
 
-    /** The search worked but matched no city. */
     data class Empty(override val query: String) : SearchUiState
 
     data class Error(override val query: String, val kind: ErrorKind) : SearchUiState

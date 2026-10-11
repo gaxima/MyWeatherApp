@@ -18,7 +18,6 @@ internal object WeatherCodes {
     /** Used for codes outside the documented WMO set: neither good nor bad. */
     const val UNKNOWN_FRIENDLINESS = 0.5
 
-    /** Null when [code] is missing, so the caller can report the factor as unavailable. */
     fun outdoorFriendliness(code: Int?): Double? = code?.let {
         when (it) {
             0, 1 -> CLEAR

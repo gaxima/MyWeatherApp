@@ -21,7 +21,6 @@ internal object OutdoorThresholds {
     const val TEMP_ZERO_LOW_C = 0.0
     const val TEMP_ZERO_HIGH_C = 38.0
 
-    /** Comfortable band: full temperature points between these two values. */
     const val TEMP_FULL_LOW_C = 15.0
     const val TEMP_FULL_HIGH_C = 28.0
 

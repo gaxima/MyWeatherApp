@@ -7,10 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object SearchRoute
 
-/**
- * Navigation destination for a city's ranking. Property names are the keys the navigation
- * library stores in the destination's [SavedStateHandle], which [cityFrom] reads back.
- */
+/** Property names are the [SavedStateHandle] keys that [cityFrom] reads back. */
 @Serializable
 data class RankingRoute(
     val name: String,

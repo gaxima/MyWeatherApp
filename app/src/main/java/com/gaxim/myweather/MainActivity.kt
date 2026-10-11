@@ -30,6 +30,7 @@ class MainActivity : ComponentActivity() {
                     AppNavHost(
                         themeMode = state.mode,
                         onThemeSelected = themeViewModel::onThemeSelected,
+                        themeEvents = themeViewModel.events,
                     )
                 }
             }

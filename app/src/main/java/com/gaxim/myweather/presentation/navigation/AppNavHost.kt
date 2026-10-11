@@ -3,6 +3,7 @@ package com.gaxim.myweather.presentation.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -29,13 +30,16 @@ import com.gaxim.myweather.presentation.search.SearchEvent
 import com.gaxim.myweather.presentation.search.SearchScreen
 import com.gaxim.myweather.presentation.search.SearchViewModel
 import com.gaxim.myweather.presentation.settings.SettingsScreen
+import com.gaxim.myweather.presentation.theme.ThemeEvent
 import com.gaxim.myweather.presentation.ui.messageRes
+import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(
     themeMode: ThemeMode,
     onThemeSelected: (ThemeMode) -> Unit,
+    themeEvents: Flow<ThemeEvent>,
     modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
@@ -76,7 +80,20 @@ fun AppNavHost(
             }
         }
         composable<SettingsRoute> {
+            val resources = LocalResources.current
+            val snackbarHostState = remember { SnackbarHostState() }
+
+            LaunchedEffect(themeEvents) {
+                themeEvents.collect { event ->
+                    when (event) {
+                        ThemeEvent.SaveFailed ->
+                            snackbarHostState.showSnackbar(resources.getString(R.string.error_theme_save))
+                    }
+                }
+            }
+
             Scaffold(
+                snackbarHost = { SnackbarHost(snackbarHostState) },
                 topBar = {
                     TopAppBar(title = { Text(stringResource(R.string.settings_title)) })
                 },

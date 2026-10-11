@@ -11,6 +11,7 @@ class ErrorKindTest {
         assertEquals(ErrorKind.NETWORK, DomainError.Network().toErrorKind())
         assertEquals(ErrorKind.TIMEOUT, DomainError.Timeout().toErrorKind())
         assertEquals(ErrorKind.INVALID_RESPONSE, DomainError.InvalidResponse("bad").toErrorKind())
+        assertEquals(ErrorKind.SERVER, DomainError.Server(503).toErrorKind())
         assertEquals(ErrorKind.UNKNOWN, DomainError.Unknown().toErrorKind())
     }
 

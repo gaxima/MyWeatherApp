@@ -52,6 +52,7 @@ fun ErrorKind.messageRes(): Int = when (this) {
     ErrorKind.NETWORK -> R.string.error_network
     ErrorKind.TIMEOUT -> R.string.error_timeout
     ErrorKind.INVALID_RESPONSE -> R.string.error_invalid_response
+    ErrorKind.SERVER -> R.string.error_server
     ErrorKind.UNKNOWN -> R.string.error_unknown
 }
 

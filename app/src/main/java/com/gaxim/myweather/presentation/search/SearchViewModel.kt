@@ -39,8 +39,19 @@ class SearchViewModel @Inject constructor(
             return
         }
         _uiState.update { it.withQuery(query) }
+        search(query, debounce = true)
+    }
+
+    /** Repeats the failed search right away; does nothing unless the screen shows an error. */
+    fun retry() {
+        val current = _uiState.value as? SearchUiState.Error ?: return
+        searchJob?.cancel()
+        search(current.query, debounce = false)
+    }
+
+    private fun search(query: String, debounce: Boolean) {
         searchJob = viewModelScope.launch {
-            delay(DEBOUNCE_MILLIS)
+            if (debounce) delay(DEBOUNCE_MILLIS)
             _uiState.value = SearchUiState.Loading(query)
             _uiState.value = searchCities(query).fold(
                 onSuccess = { cities ->

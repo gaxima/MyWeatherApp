@@ -7,6 +7,7 @@ enum class ErrorKind {
     NETWORK,
     TIMEOUT,
     INVALID_RESPONSE,
+    SERVER,
     UNKNOWN,
 }
 
@@ -15,5 +16,6 @@ fun Throwable.toErrorKind(): ErrorKind = when (this) {
     is DomainError.Network -> ErrorKind.NETWORK
     is DomainError.Timeout -> ErrorKind.TIMEOUT
     is DomainError.InvalidResponse -> ErrorKind.INVALID_RESPONSE
+    is DomainError.Server -> ErrorKind.SERVER
     else -> ErrorKind.UNKNOWN
 }

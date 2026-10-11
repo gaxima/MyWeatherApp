@@ -11,8 +11,11 @@ sealed class DomainError(message: String, cause: Throwable? = null) : Exception(
 
     class Timeout(cause: Throwable? = null) : DomainError("Request timed out", cause)
 
-    /** The server answered, but with an error status or a body we cannot interpret. */
+    /** The server answered, but with a client error status or a body we cannot interpret. */
     class InvalidResponse(message: String, cause: Throwable? = null) : DomainError(message, cause)
+
+    /** The server is failing or rate limiting (5xx or 429): our request was fine, retry later. */
+    class Server(val code: Int, cause: Throwable? = null) : DomainError("Server error $code", cause)
 
     class Unknown(cause: Throwable? = null) : DomainError("Unexpected error", cause)
 }

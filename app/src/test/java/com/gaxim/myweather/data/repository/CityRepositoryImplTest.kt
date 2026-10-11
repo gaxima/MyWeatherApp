@@ -77,10 +77,19 @@ class CityRepositoryImplTest {
     }
 
     @Test
-    fun `given 5xx, when searching, then failure is InvalidResponse`() = runTest {
+    fun `given 5xx, when searching, then failure is Server with the status code`() = runTest {
         respond(code = 503)
 
-        assertTrue(repository().search("x").exceptionOrNull() is DomainError.InvalidResponse)
+        val error = repository().search("x").exceptionOrNull()
+        assertTrue(error is DomainError.Server)
+        assertEquals(503, (error as DomainError.Server).code)
+    }
+
+    @Test
+    fun `given rate limited, when searching, then failure is Server`() = runTest {
+        respond(code = 429)
+
+        assertTrue(repository().search("x").exceptionOrNull() is DomainError.Server)
     }
 
     @Test

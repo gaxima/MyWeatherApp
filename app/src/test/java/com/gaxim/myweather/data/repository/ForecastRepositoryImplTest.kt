@@ -89,10 +89,19 @@ class ForecastRepositoryImplTest {
     }
 
     @Test
-    fun `given 5xx, when fetching, then failure is InvalidResponse`() = runTest {
+    fun `given 5xx, when fetching, then failure is Server with the status code`() = runTest {
         respond(code = 500)
 
-        assertTrue(repository().getForecast(city).exceptionOrNull() is DomainError.InvalidResponse)
+        val error = repository().getForecast(city).exceptionOrNull()
+        assertTrue(error is DomainError.Server)
+        assertEquals(500, (error as DomainError.Server).code)
+    }
+
+    @Test
+    fun `given rate limited, when fetching, then failure is Server`() = runTest {
+        respond(code = 429)
+
+        assertTrue(repository().getForecast(city).exceptionOrNull() is DomainError.Server)
     }
 
     @Test

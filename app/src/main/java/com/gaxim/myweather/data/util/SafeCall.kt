@@ -28,10 +28,23 @@ internal suspend fun <T> safeCall(
     } catch (e: IOException) {
         Result.failure(DomainError.Network(e))
     } catch (e: HttpException) {
-        Result.failure(DomainError.InvalidResponse("HTTP ${e.code()}", e))
+        Result.failure(e.toDomainError())
     } catch (e: SerializationException) {
         Result.failure(DomainError.InvalidResponse("Malformed response", e))
     } catch (e: Exception) {
         Result.failure(DomainError.Unknown(e))
+    }
+}
+
+private const val HTTP_TOO_MANY_REQUESTS = 429
+private const val HTTP_SERVER_ERRORS = 500
+
+/** 5xx and 429 mean the server cannot serve us right now; any other status means a bad request. */
+private fun HttpException.toDomainError(): DomainError {
+    val code = code()
+    return if (code >= HTTP_SERVER_ERRORS || code == HTTP_TOO_MANY_REQUESTS) {
+        DomainError.Server(code, this)
+    } else {
+        DomainError.InvalidResponse("HTTP $code", this)
     }
 }

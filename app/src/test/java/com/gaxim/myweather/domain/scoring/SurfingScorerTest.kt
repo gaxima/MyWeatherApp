@@ -77,10 +77,19 @@ class SurfingScorerTest {
     }
 
     @Test
-    fun `given wind just above ideal band, when scoring, then score drops`() {
+    fun `given wind just above ideal band, when scoring, then score drops and reason is choppy`() {
         val result = SurfingScorer.score(idealDay.copy(windSpeedMax = t.WIND_FULL_HIGH_KMH + 1.0))
 
         assertTrue(result.score < 100)
+        assertEquals(ReasonKey.SURF_CHOPPY, result.reason)
+    }
+
+    @Test
+    fun `given wind just below blown-out limit, when scoring, then reason is choppy not strong wind`() {
+        val result = SurfingScorer.score(idealDay.copy(windSpeedMax = t.WIND_ZERO_HIGH_KMH - 1.0))
+
+        assertTrue(result.score > 0)
+        assertEquals(ReasonKey.SURF_CHOPPY, result.reason)
     }
 
     @Test

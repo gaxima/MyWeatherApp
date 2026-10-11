@@ -26,6 +26,7 @@ fun ReasonKey.textRes(): Int = when (this) {
     ReasonKey.SKI_TOO_WARM -> R.string.reason_ski_too_warm
     ReasonKey.SURF_RIDEABLE_WIND -> R.string.reason_surf_rideable_wind
     ReasonKey.SURF_TOO_CALM -> R.string.reason_surf_too_calm
+    ReasonKey.SURF_CHOPPY -> R.string.reason_surf_choppy
     ReasonKey.STRONG_WIND -> R.string.reason_strong_wind
     ReasonKey.STORM -> R.string.reason_storm
     ReasonKey.RAIN -> R.string.reason_rain

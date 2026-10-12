@@ -21,7 +21,6 @@ class MainActivity : ComponentActivity() {
     private val themeViewModel: ThemeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Keeps the splash up while the saved theme loads, instead of drawing an empty frame.
         installSplashScreen().setKeepOnScreenCondition {
             themeViewModel.uiState.value is ThemeUiState.Loading
         }

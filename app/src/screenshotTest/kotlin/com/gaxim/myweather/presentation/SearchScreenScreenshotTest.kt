@@ -1,5 +1,6 @@
 package com.gaxim.myweather.presentation
 
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import com.android.tools.screenshot.PreviewTest
 import com.gaxim.myweather.domain.model.City
@@ -16,7 +17,10 @@ private val cities = listOf(
 @Composable
 private fun SearchScreenshot(state: SearchUiState) {
     MyWeatherTheme {
-        SearchScreen(state = state, onQueryChange = {}, onCityClick = {}, onRetry = {})
+        // In the app the Scaffold paints the background; without it dark text sits on white.
+        Surface {
+            SearchScreen(state = state, onQueryChange = {}, onCityClick = {}, onRetry = {})
+        }
     }
 }
 

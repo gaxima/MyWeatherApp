@@ -116,6 +116,33 @@ class ThemeViewModelTest {
         }
 
     @Test
+    fun `given saving fails, when a mode is selected, then a save failed event is emitted once`() =
+        runTest(dispatcher) {
+            val viewModel = ThemeViewModel(FakeThemeRepository(ThemeMode.Light, failOnSave = true))
+
+            viewModel.events.test {
+                viewModel.onThemeSelected(ThemeMode.Dark)
+                runCurrent()
+
+                assertEquals(ThemeEvent.SaveFailed, awaitItem())
+                expectNoEvents()
+            }
+        }
+
+    @Test
+    fun `given saving succeeds, when a mode is selected, then no event is emitted`() =
+        runTest(dispatcher) {
+            val viewModel = ThemeViewModel(FakeThemeRepository(ThemeMode.Light))
+
+            viewModel.events.test {
+                viewModel.onThemeSelected(ThemeMode.Dark)
+                runCurrent()
+
+                expectNoEvents()
+            }
+        }
+
+    @Test
     fun `given the mode is not loaded, when a mode is selected, then it is still saved`() =
         runTest(dispatcher) {
             val saved = mutableListOf<ThemeMode>()

@@ -31,6 +31,8 @@ fun ReasonKey.textRes(): Int = when (this) {
     ReasonKey.STORM -> R.string.reason_storm
     ReasonKey.RAIN -> R.string.reason_rain
     ReasonKey.OUTDOOR_PLEASANT -> R.string.reason_outdoor_pleasant
+    ReasonKey.OUTDOOR_COOL -> R.string.reason_outdoor_cool
+    ReasonKey.OUTDOOR_WARM -> R.string.reason_outdoor_warm
     ReasonKey.OUTDOOR_TOO_COLD -> R.string.reason_outdoor_too_cold
     ReasonKey.OUTDOOR_TOO_HOT -> R.string.reason_outdoor_too_hot
     ReasonKey.INDOOR_ANY_WEATHER -> R.string.reason_indoor_any_weather

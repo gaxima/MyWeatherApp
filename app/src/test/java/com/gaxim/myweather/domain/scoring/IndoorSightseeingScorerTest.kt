@@ -64,6 +64,23 @@ class IndoorSightseeingScorerTest {
     }
 
     @Test
+    fun `given a merely warm day, when scoring indoor sightseeing, then reason is any weather`() {
+        val warm = (OutdoorThresholds.TEMP_FULL_HIGH_C + OutdoorThresholds.TEMP_TOO_HOT_C) / 2
+        val result = IndoorSightseeingScorer.score(perfectOutdoorDay.copy(temperatureMax = warm))
+
+        assertEquals(ReasonKey.INDOOR_ANY_WEATHER, result.reason)
+    }
+
+    @Test
+    fun `given a really hot day, when scoring indoor sightseeing, then reason is outdoor too hot`() {
+        val result = IndoorSightseeingScorer.score(
+            perfectOutdoorDay.copy(temperatureMax = OutdoorThresholds.TEMP_TOO_HOT_C),
+        )
+
+        assertEquals(ReasonKey.OUTDOOR_TOO_HOT, result.reason)
+    }
+
+    @Test
     fun `given worsening weather, when scoring indoor sightseeing, then score only increases`() {
         val fine = IndoorSightseeingScorer.score(perfectOutdoorDay).score
         val drizzly = IndoorSightseeingScorer.score(

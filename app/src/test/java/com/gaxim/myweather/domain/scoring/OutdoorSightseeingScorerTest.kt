@@ -56,12 +56,39 @@ class OutdoorSightseeingScorerTest {
     }
 
     @Test
-    fun `given temperature below comfort band, when scoring, then score drops and reason is too cold`() {
+    fun `given temperature below comfort band, when scoring, then score drops and reason is cool`() {
         val result = OutdoorSightseeingScorer.score(
             idealDay.copy(temperatureMax = t.TEMP_FULL_LOW_C - 1.0),
         )
 
         assertTrue(result.score < 100)
+        assertEquals(ReasonKey.OUTDOOR_COOL, result.reason)
+    }
+
+    @Test
+    fun `given temperature just below comfort band, when scoring, then reason is cool`() {
+        val result = OutdoorSightseeingScorer.score(
+            idealDay.copy(temperatureMax = t.TEMP_FULL_LOW_C - 0.1),
+        )
+
+        assertEquals(ReasonKey.OUTDOOR_COOL, result.reason)
+    }
+
+    @Test
+    fun `given temperature just above the too cold limit, when scoring, then reason is still cool`() {
+        val result = OutdoorSightseeingScorer.score(
+            idealDay.copy(temperatureMax = t.TEMP_TOO_COLD_C + 0.1),
+        )
+
+        assertEquals(ReasonKey.OUTDOOR_COOL, result.reason)
+    }
+
+    @Test
+    fun `given temperature exactly at the too cold limit, when scoring, then reason is too cold`() {
+        val result = OutdoorSightseeingScorer.score(
+            idealDay.copy(temperatureMax = t.TEMP_TOO_COLD_C),
+        )
+
         assertEquals(ReasonKey.OUTDOOR_TOO_COLD, result.reason)
     }
 
@@ -76,13 +103,49 @@ class OutdoorSightseeingScorerTest {
     }
 
     @Test
-    fun `given temperature above comfort band, when scoring, then score drops and reason is too hot`() {
+    fun `given temperature above comfort band, when scoring, then score drops and reason is warm`() {
         val result = OutdoorSightseeingScorer.score(
             idealDay.copy(temperatureMax = t.TEMP_FULL_HIGH_C + 1.0),
         )
 
         assertTrue(result.score < 100)
+        assertEquals(ReasonKey.OUTDOOR_WARM, result.reason)
+    }
+
+    @Test
+    fun `given temperature just above comfort band, when scoring, then reason is warm`() {
+        val result = OutdoorSightseeingScorer.score(
+            idealDay.copy(temperatureMax = t.TEMP_FULL_HIGH_C + 0.1),
+        )
+
+        assertEquals(ReasonKey.OUTDOOR_WARM, result.reason)
+    }
+
+    @Test
+    fun `given temperature just below the too hot limit, when scoring, then reason is still warm`() {
+        val result = OutdoorSightseeingScorer.score(
+            idealDay.copy(temperatureMax = t.TEMP_TOO_HOT_C - 0.1),
+        )
+
+        assertEquals(ReasonKey.OUTDOOR_WARM, result.reason)
+    }
+
+    @Test
+    fun `given temperature exactly at the too hot limit, when scoring, then reason is too hot`() {
+        val result = OutdoorSightseeingScorer.score(
+            idealDay.copy(temperatureMax = t.TEMP_TOO_HOT_C),
+        )
+
         assertEquals(ReasonKey.OUTDOOR_TOO_HOT, result.reason)
+    }
+
+    @Test
+    fun `given the too hot and too cold limits, then temperature keeps half its points there`() {
+        val atHot = outdoorFractions(idealDay.copy(temperatureMax = t.TEMP_TOO_HOT_C)).temperature
+        val atCold = outdoorFractions(idealDay.copy(temperatureMax = t.TEMP_TOO_COLD_C)).temperature
+
+        assertEquals(0.5, requireNotNull(atHot), 1e-9)
+        assertEquals(0.5, requireNotNull(atCold), 1e-9)
     }
 
     @Test

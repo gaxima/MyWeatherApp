@@ -24,6 +24,13 @@ internal object OutdoorThresholds {
     const val TEMP_FULL_LOW_C = 15.0
     const val TEMP_FULL_HIGH_C = 28.0
 
+    /**
+     * Where temperature has lost half its points. Between the comfort band and these limits the
+     * day is only "cool" or "warm"; at or past them it is "too cold" or "too hot".
+     */
+    const val TEMP_TOO_COLD_C = (TEMP_ZERO_LOW_C + TEMP_FULL_LOW_C) / 2
+    const val TEMP_TOO_HOT_C = (TEMP_FULL_HIGH_C + TEMP_ZERO_HIGH_C) / 2
+
     const val PRECIP_IDEAL_MM = 0.5
 
     /** Daily precipitation at or above this ruins a day outdoors: zero points, reason "rain". */
@@ -77,8 +84,8 @@ internal fun outdoorHazard(forecast: DailyForecast): ReasonKey? {
         precip != null && precip >= t.PRECIP_LIMIT_MM -> ReasonKey.RAIN
         wind != null && wind >= t.WIND_LIMIT_KMH -> ReasonKey.STRONG_WIND
         gusts != null && gusts >= t.GUST_LIMIT_KMH -> ReasonKey.STRONG_WIND
-        tempMax != null && tempMax < t.TEMP_FULL_LOW_C -> ReasonKey.OUTDOOR_TOO_COLD
-        tempMax != null && tempMax > t.TEMP_FULL_HIGH_C -> ReasonKey.OUTDOOR_TOO_HOT
+        tempMax != null && tempMax <= t.TEMP_TOO_COLD_C -> ReasonKey.OUTDOOR_TOO_COLD
+        tempMax != null && tempMax >= t.TEMP_TOO_HOT_C -> ReasonKey.OUTDOOR_TOO_HOT
         else -> null
     }
 }
@@ -102,7 +109,17 @@ object OutdoorSightseeingScorer : ActivityScorer {
         )
     }
 
-    /** With no hazard, "pleasant" is only honest when temperature, the decisive factor, is known. */
-    private fun noHazardReason(forecast: DailyForecast): ReasonKey =
-        if (forecast.temperatureMax == null) ReasonKey.INSUFFICIENT_DATA else ReasonKey.OUTDOOR_PLEASANT
+    /**
+     * With no hazard, temperature decides the wording, so it is only honest when it is known.
+     * Outside the comfort band but short of a hazard the day is merely cool or warm.
+     */
+    private fun noHazardReason(forecast: DailyForecast): ReasonKey {
+        val t = OutdoorThresholds
+        val tempMax = forecast.temperatureMax ?: return ReasonKey.INSUFFICIENT_DATA
+        return when {
+            tempMax < t.TEMP_FULL_LOW_C -> ReasonKey.OUTDOOR_COOL
+            tempMax > t.TEMP_FULL_HIGH_C -> ReasonKey.OUTDOOR_WARM
+            else -> ReasonKey.OUTDOOR_PLEASANT
+        }
+    }
 }

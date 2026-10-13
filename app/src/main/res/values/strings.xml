@@ -48,6 +48,8 @@
     <string name="reason_storm">Thunderstorm expected</string>
     <string name="reason_rain">Rain expected</string>
     <string name="reason_outdoor_pleasant">Pleasant weather to be outside</string>
+    <string name="reason_outdoor_cool">Cool, bring a jacket</string>
+    <string name="reason_outdoor_warm">Warm, find some shade</string>
     <string name="reason_outdoor_too_cold">Too cold to enjoy outdoors</string>
     <string name="reason_outdoor_too_hot">Too hot to enjoy outdoors</string>
     <string name="reason_indoor_any_weather">Works in any weather</string>

@@ -45,38 +45,38 @@ internal object SurfingThresholds {
 object SurfingScorer : ActivityScorer {
 
     override fun score(forecast: DailyForecast): ActivityScore {
-        val t = SurfingThresholds
+        val surfingThresholds = SurfingThresholds
         val builder = ScoreBuilder()
         builder.factor(
             WeatherFactor.WIND_SPEED,
-            t.WIND_WEIGHT,
+            surfingThresholds.WIND_WEIGHT,
             band(
                 forecast.windSpeedMax,
-                t.WIND_ZERO_LOW_KMH,
-                t.WIND_FULL_LOW_KMH,
-                t.WIND_FULL_HIGH_KMH,
-                t.WIND_ZERO_HIGH_KMH,
+                surfingThresholds.WIND_ZERO_LOW_KMH,
+                surfingThresholds.WIND_FULL_LOW_KMH,
+                surfingThresholds.WIND_FULL_HIGH_KMH,
+                surfingThresholds.WIND_ZERO_HIGH_KMH,
             ),
         )
         builder.factor(
             WeatherFactor.WIND_GUSTS,
-            t.GUST_WEIGHT,
-            ramp(forecast.windGustsMax, t.GUST_LIMIT_KMH, t.GUST_IDEAL_KMH),
+            surfingThresholds.GUST_WEIGHT,
+            ramp(forecast.windGustsMax, surfingThresholds.GUST_LIMIT_KMH, surfingThresholds.GUST_IDEAL_KMH),
         )
         builder.factor(
             WeatherFactor.PRECIPITATION,
-            t.PRECIPITATION_WEIGHT,
-            ramp(forecast.precipitationSum, t.PRECIP_LIMIT_MM, t.PRECIP_IDEAL_MM),
+            surfingThresholds.PRECIPITATION_WEIGHT,
+            ramp(forecast.precipitationSum, surfingThresholds.PRECIP_LIMIT_MM, surfingThresholds.PRECIP_IDEAL_MM),
         )
         builder.factor(
             WeatherFactor.WEATHER_CODE,
-            t.WEATHER_CODE_WEIGHT,
+            surfingThresholds.WEATHER_CODE_WEIGHT,
             WeatherCodes.outdoorFriendliness(forecast.weatherCode),
         )
         builder.factor(
             WeatherFactor.TEMPERATURE,
-            t.TEMPERATURE_WEIGHT,
-            ramp(forecast.temperatureMax, t.TEMP_COLD_C, t.TEMP_COMFORT_C),
+            surfingThresholds.TEMPERATURE_WEIGHT,
+            ramp(forecast.temperatureMax, surfingThresholds.TEMP_COLD_C, surfingThresholds.TEMP_COMFORT_C),
         )
         return ActivityScore(
             activity = Activity.SURFING,
@@ -92,18 +92,18 @@ object SurfingScorer : ActivityScorer {
      * only once the surf is blown out.
      */
     private fun reasonFor(forecast: DailyForecast): ReasonKey {
-        val t = SurfingThresholds
+        val surfingThresholds = SurfingThresholds
         val wind = forecast.windSpeedMax
         val gusts = forecast.windGustsMax
         val precip = forecast.precipitationSum
         return when {
             WeatherCodes.isThunderstorm(forecast.weatherCode) -> ReasonKey.STORM
-            wind != null && wind >= t.WIND_ZERO_HIGH_KMH -> ReasonKey.STRONG_WIND
-            gusts != null && gusts >= t.GUST_LIMIT_KMH -> ReasonKey.STRONG_WIND
-            precip != null && precip >= t.PRECIP_LIMIT_MM -> ReasonKey.RAIN
+            wind != null && wind >= surfingThresholds.WIND_ZERO_HIGH_KMH -> ReasonKey.STRONG_WIND
+            gusts != null && gusts >= surfingThresholds.GUST_LIMIT_KMH -> ReasonKey.STRONG_WIND
+            precip != null && precip >= surfingThresholds.PRECIP_LIMIT_MM -> ReasonKey.RAIN
             wind == null -> ReasonKey.INSUFFICIENT_DATA
-            wind < t.WIND_FULL_LOW_KMH -> ReasonKey.SURF_TOO_CALM
-            wind > t.WIND_FULL_HIGH_KMH -> ReasonKey.SURF_CHOPPY
+            wind < surfingThresholds.WIND_FULL_LOW_KMH -> ReasonKey.SURF_TOO_CALM
+            wind > surfingThresholds.WIND_FULL_HIGH_KMH -> ReasonKey.SURF_CHOPPY
             else -> ReasonKey.SURF_RIDEABLE_WIND
         }
     }

@@ -53,19 +53,19 @@ internal data class OutdoorFractions(
 )
 
 internal fun outdoorFractions(forecast: DailyForecast): OutdoorFractions {
-    val t = OutdoorThresholds
+    val outdoorThresholds = OutdoorThresholds
     return OutdoorFractions(
         weatherCode = WeatherCodes.outdoorFriendliness(forecast.weatherCode),
-        precipitation = ramp(forecast.precipitationSum, t.PRECIP_LIMIT_MM, t.PRECIP_IDEAL_MM),
+        precipitation = ramp(forecast.precipitationSum, outdoorThresholds.PRECIP_LIMIT_MM, outdoorThresholds.PRECIP_IDEAL_MM),
         temperature = band(
             forecast.temperatureMax,
-            t.TEMP_ZERO_LOW_C,
-            t.TEMP_FULL_LOW_C,
-            t.TEMP_FULL_HIGH_C,
-            t.TEMP_ZERO_HIGH_C,
+            outdoorThresholds.TEMP_ZERO_LOW_C,
+            outdoorThresholds.TEMP_FULL_LOW_C,
+            outdoorThresholds.TEMP_FULL_HIGH_C,
+            outdoorThresholds.TEMP_ZERO_HIGH_C,
         ),
-        wind = ramp(forecast.windSpeedMax, t.WIND_LIMIT_KMH, t.WIND_IDEAL_KMH),
-        gusts = ramp(forecast.windGustsMax, t.GUST_LIMIT_KMH, t.GUST_IDEAL_KMH),
+        wind = ramp(forecast.windSpeedMax, outdoorThresholds.WIND_LIMIT_KMH, outdoorThresholds.WIND_IDEAL_KMH),
+        gusts = ramp(forecast.windGustsMax, outdoorThresholds.GUST_LIMIT_KMH, outdoorThresholds.GUST_IDEAL_KMH),
     )
 }
 
@@ -74,18 +74,18 @@ internal fun outdoorFractions(forecast: DailyForecast): OutdoorFractions {
  * wins, from most to least severe.
  */
 internal fun outdoorHazard(forecast: DailyForecast): ReasonKey? {
-    val t = OutdoorThresholds
+    val outdoorThresholds = OutdoorThresholds
     val precip = forecast.precipitationSum
     val wind = forecast.windSpeedMax
     val gusts = forecast.windGustsMax
     val tempMax = forecast.temperatureMax
     return when {
         WeatherCodes.isThunderstorm(forecast.weatherCode) -> ReasonKey.STORM
-        precip != null && precip >= t.PRECIP_LIMIT_MM -> ReasonKey.RAIN
-        wind != null && wind >= t.WIND_LIMIT_KMH -> ReasonKey.STRONG_WIND
-        gusts != null && gusts >= t.GUST_LIMIT_KMH -> ReasonKey.STRONG_WIND
-        tempMax != null && tempMax <= t.TEMP_TOO_COLD_C -> ReasonKey.OUTDOOR_TOO_COLD
-        tempMax != null && tempMax >= t.TEMP_TOO_HOT_C -> ReasonKey.OUTDOOR_TOO_HOT
+        precip != null && precip >= outdoorThresholds.PRECIP_LIMIT_MM -> ReasonKey.RAIN
+        wind != null && wind >= outdoorThresholds.WIND_LIMIT_KMH -> ReasonKey.STRONG_WIND
+        gusts != null && gusts >= outdoorThresholds.GUST_LIMIT_KMH -> ReasonKey.STRONG_WIND
+        tempMax != null && tempMax <= outdoorThresholds.TEMP_TOO_COLD_C -> ReasonKey.OUTDOOR_TOO_COLD
+        tempMax != null && tempMax >= outdoorThresholds.TEMP_TOO_HOT_C -> ReasonKey.OUTDOOR_TOO_HOT
         else -> null
     }
 }
@@ -93,14 +93,26 @@ internal fun outdoorHazard(forecast: DailyForecast): ReasonKey? {
 object OutdoorSightseeingScorer : ActivityScorer {
 
     override fun score(forecast: DailyForecast): ActivityScore {
-        val t = OutdoorThresholds
+        val outdoorThresholds = OutdoorThresholds
         val fractions = outdoorFractions(forecast)
         val builder = ScoreBuilder()
-        builder.factor(WeatherFactor.WEATHER_CODE, t.WEATHER_CODE_WEIGHT, fractions.weatherCode)
-        builder.factor(WeatherFactor.PRECIPITATION, t.PRECIPITATION_WEIGHT, fractions.precipitation)
-        builder.factor(WeatherFactor.TEMPERATURE, t.TEMPERATURE_WEIGHT, fractions.temperature)
-        builder.factor(WeatherFactor.WIND_SPEED, t.WIND_WEIGHT, fractions.wind)
-        builder.factor(WeatherFactor.WIND_GUSTS, t.GUST_WEIGHT, fractions.gusts)
+        builder.factor(
+            WeatherFactor.WEATHER_CODE,
+            outdoorThresholds.WEATHER_CODE_WEIGHT,
+            fractions.weatherCode,
+        )
+        builder.factor(
+            WeatherFactor.PRECIPITATION,
+            outdoorThresholds.PRECIPITATION_WEIGHT,
+            fractions.precipitation,
+        )
+        builder.factor(
+            WeatherFactor.TEMPERATURE,
+            outdoorThresholds.TEMPERATURE_WEIGHT,
+            fractions.temperature,
+        )
+        builder.factor(WeatherFactor.WIND_SPEED, outdoorThresholds.WIND_WEIGHT, fractions.wind)
+        builder.factor(WeatherFactor.WIND_GUSTS, outdoorThresholds.GUST_WEIGHT, fractions.gusts)
         return ActivityScore(
             activity = Activity.OUTDOOR_SIGHTSEEING,
             score = builder.score(),
@@ -114,11 +126,11 @@ object OutdoorSightseeingScorer : ActivityScorer {
      * Outside the comfort band but short of a hazard the day is merely cool or warm.
      */
     private fun noHazardReason(forecast: DailyForecast): ReasonKey {
-        val t = OutdoorThresholds
+        val outdoorThresholds = OutdoorThresholds
         val tempMax = forecast.temperatureMax ?: return ReasonKey.INSUFFICIENT_DATA
         return when {
-            tempMax < t.TEMP_FULL_LOW_C -> ReasonKey.OUTDOOR_COOL
-            tempMax > t.TEMP_FULL_HIGH_C -> ReasonKey.OUTDOOR_WARM
+            tempMax < outdoorThresholds.TEMP_FULL_LOW_C -> ReasonKey.OUTDOOR_COOL
+            tempMax > outdoorThresholds.TEMP_FULL_HIGH_C -> ReasonKey.OUTDOOR_WARM
             else -> ReasonKey.OUTDOOR_PLEASANT
         }
     }

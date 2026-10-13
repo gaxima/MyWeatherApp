@@ -27,14 +27,26 @@ internal object IndoorThresholds {
 object IndoorSightseeingScorer : ActivityScorer {
 
     override fun score(forecast: DailyForecast): ActivityScore {
-        val t = IndoorThresholds
+        val indoorThresholds = IndoorThresholds
         val outdoor = outdoorFractions(forecast)
         val builder = ScoreBuilder()
-        builder.factor(WeatherFactor.WEATHER_CODE, t.WEATHER_CODE_WEIGHT, indoorFraction(outdoor.weatherCode))
-        builder.factor(WeatherFactor.PRECIPITATION, t.PRECIPITATION_WEIGHT, indoorFraction(outdoor.precipitation))
-        builder.factor(WeatherFactor.TEMPERATURE, t.TEMPERATURE_WEIGHT, indoorFraction(outdoor.temperature))
-        builder.factor(WeatherFactor.WIND_SPEED, t.WIND_WEIGHT, indoorFraction(outdoor.wind))
-        builder.factor(WeatherFactor.WIND_GUSTS, t.GUST_WEIGHT, indoorFraction(outdoor.gusts))
+        builder.factor(
+            WeatherFactor.WEATHER_CODE,
+            indoorThresholds.WEATHER_CODE_WEIGHT,
+            indoorFraction(outdoor.weatherCode),
+        )
+        builder.factor(
+            WeatherFactor.PRECIPITATION,
+            indoorThresholds.PRECIPITATION_WEIGHT,
+            indoorFraction(outdoor.precipitation),
+        )
+        builder.factor(
+            WeatherFactor.TEMPERATURE,
+            indoorThresholds.TEMPERATURE_WEIGHT,
+            indoorFraction(outdoor.temperature),
+        )
+        builder.factor(WeatherFactor.WIND_SPEED, indoorThresholds.WIND_WEIGHT, indoorFraction(outdoor.wind))
+        builder.factor(WeatherFactor.WIND_GUSTS, indoorThresholds.GUST_WEIGHT, indoorFraction(outdoor.gusts))
         return ActivityScore(
             activity = Activity.INDOOR_SIGHTSEEING,
             score = builder.score(),

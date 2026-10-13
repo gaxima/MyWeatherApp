@@ -16,6 +16,8 @@ enum class ReasonKey {
     STORM,
     RAIN,
     OUTDOOR_PLEASANT,
+    OUTDOOR_COOL,
+    OUTDOOR_WARM,
     OUTDOOR_TOO_COLD,
     OUTDOOR_TOO_HOT,
     INDOOR_ANY_WEATHER,

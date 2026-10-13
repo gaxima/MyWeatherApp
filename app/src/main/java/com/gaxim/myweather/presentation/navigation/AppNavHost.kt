@@ -3,16 +3,12 @@ package com.gaxim.myweather.presentation.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -23,15 +19,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gaxim.myweather.R
 import com.gaxim.myweather.domain.model.ThemeMode
-import com.gaxim.myweather.presentation.ranking.RankingEvent
-import com.gaxim.myweather.presentation.ranking.RankingScreen
+import com.gaxim.myweather.presentation.ranking.RankingDestination
 import com.gaxim.myweather.presentation.ranking.RankingViewModel
 import com.gaxim.myweather.presentation.search.SearchEvent
 import com.gaxim.myweather.presentation.search.SearchScreen
 import com.gaxim.myweather.presentation.search.SearchViewModel
-import com.gaxim.myweather.presentation.settings.SettingsScreen
+import com.gaxim.myweather.presentation.settings.SettingsDestination
 import com.gaxim.myweather.presentation.theme.ThemeEvent
-import com.gaxim.myweather.presentation.ui.messageRes
 import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,59 +74,23 @@ fun AppNavHost(
             }
         }
         composable<SettingsRoute> {
-            val resources = LocalResources.current
-            val snackbarHostState = remember { SnackbarHostState() }
-
-            LaunchedEffect(themeEvents) {
-                themeEvents.collect { event ->
-                    when (event) {
-                        ThemeEvent.SaveFailed ->
-                            snackbarHostState.showSnackbar(resources.getString(R.string.error_theme_save))
-                    }
-                }
-            }
-
-            Scaffold(
-                snackbarHost = { SnackbarHost(snackbarHostState) },
-                topBar = {
-                    TopAppBar(title = { Text(stringResource(R.string.settings_title)) })
-                },
-                bottomBar = {
-                    AppBottomBar(
-                        selected = TopLevelDestination.Settings,
-                        onSelect = navController::navigateToTopLevel,
-                    )
-                },
-            ) { innerPadding ->
-                SettingsScreen(
-                    themeMode = themeMode,
-                    onThemeSelected = onThemeSelected,
-                    modifier = Modifier.padding(innerPadding),
-                )
-            }
+            SettingsDestination(
+                themeMode = themeMode,
+                onThemeSelected = onThemeSelected,
+                themeEvents = themeEvents,
+                onSelectTopLevel = navController::navigateToTopLevel,
+            )
         }
         composable<RankingRoute> {
             val viewModel = hiltViewModel<RankingViewModel>()
-            val resources = LocalResources.current
             val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-            val snackbarHostState = remember { SnackbarHostState() }
-
-            LaunchedEffect(viewModel) {
-                viewModel.events.collect { event ->
-                    when (event) {
-                        is RankingEvent.RefreshFailed ->
-                            snackbarHostState.showSnackbar(resources.getString(event.kind.messageRes()))
-                    }
-                }
-            }
-
-            RankingScreen(
+            RankingDestination(
                 state = state,
+                events = viewModel.events,
                 onBack = navController::popBackStack,
                 onRetry = viewModel::retry,
                 onRefresh = viewModel::refresh,
-                snackbarHostState = snackbarHostState,
             )
         }
     }

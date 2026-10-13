@@ -25,7 +25,7 @@ spent the time. The UI is plain Material 3.
 | Networking | Retrofit 3 + OkHttp 5 + kotlinx.serialization |
 | Async | Coroutines + Flow |
 | Persistence | DataStore Preferences (only for the theme setting) |
-| Tests | JUnit 4, Turbine, kotlinx-coroutines-test, MockWebServer, Compose Preview Screenshot Testing |
+| Tests | JUnit 4, Turbine, kotlinx-coroutines-test, MockWebServer, Compose UI test on Robolectric, Compose Preview Screenshot Testing |
 
 I picked Android because it's the platform I work on day to day. Every library here is the
 standard choice for its job, so a reviewer shouldn't need to learn anything new to read the code.
@@ -86,7 +86,7 @@ Android Studio satisfies it.
 ## Tests
 
 ```bash
-./gradlew testDebugUnitTest            # 153 unit tests
+./gradlew testDebugUnitTest            # 175 tests on the JVM, Compose UI tests included
 ./gradlew validateDebugScreenshotTest  # 26 screenshot references
 ./gradlew lintDebug
 ```
@@ -106,15 +106,20 @@ wherever possible.
 | Data layer | 36 | Mappers with nulls / short arrays / bad dates; both repositories against MockWebServer: success, 4xx, 5xx, 429, malformed JSON, wrong types, timeout, dropped connection, cancellation |
 | ViewModels | 35 | State transitions with Turbine on a `StandardTestDispatcher`: search debounce, stale results being dropped, retry, refresh keeping old data visible, theme save failures |
 | Small presentation helpers | 5 | Error → message mapping, city display name |
+| Compose UI (Robolectric) | 22 | Each screen with a given state: what's shown, and that taps, typing, back and pull-to-refresh call the right callback; snackbars for a failed theme save and a failed refresh |
 | Screenshots | 13 previews × light/dark | Every state of the Search, Ranking and Settings screens, plus the bottom bar |
 
 Test names describe behaviour, for example
 `given rain, when ranking, then indoor beats outdoor`. I used hand-written fakes instead of mocks:
 they're shorter, and they fail in a more readable way.
 
-**What isn't covered:** there are no instrumented or Compose UI tests. The wiring between the
-ViewModels and the screens (navigation, the snackbar when saving the theme fails) is checked by
-hand, not automatically. That's the first gap I'd close.
+The UI tests run on Robolectric, so the whole suite runs with one command and no emulator. Because
+the screens are stateless, each test just builds a `UiState`, renders it and checks the callbacks;
+there's no Hilt or network involved.
+
+**What isn't covered:** navigation end to end (search → ranking → back) with the real ViewModels
+and Hilt. Each piece is tested on its own, but not the full journey. I checked that by hand on an
+emulator.
 
 ## API usage
 
@@ -216,7 +221,8 @@ Before shipping I would add:
 - **Open-Meteo terms.** The free API is for non-commercial use. A real product needs their paid
   plan (or another provider) and an API key handled outside the repo.
 - **Caching** of forecasts, both for offline use and to stay well under rate limits.
-- **UI / instrumented tests** for navigation and the snackbar wiring, running in CI on every PR.
+- **An end-to-end navigation test** with Hilt test bindings, and CI running the whole suite on
+  every PR.
 - **Crash reporting and analytics** (which cities, which activities, error rates).
 - **An accessibility pass** with TalkBack and large fonts. Scores are plain text, but I haven't
   audited it.

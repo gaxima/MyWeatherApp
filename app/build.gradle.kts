@@ -36,6 +36,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     experimentalProperties["android.experimental.enableScreenshotTest"] = true
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        // Robolectric reads FileDescriptor internals when it boots recent Android SDKs; JDK 17+
+        // hides that package unless it is exported to the test JVM.
+        unitTests.all { it.jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED") }
+    }
     buildFeatures {
         compose = true
     }
@@ -70,6 +76,10 @@ dependencies {
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.androidx.espresso.core)
+    testImplementation(libs.robolectric)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

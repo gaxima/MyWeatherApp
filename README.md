@@ -115,9 +115,7 @@ they're shorter, and they fail in a more readable way.
 
 The UI tests run on Robolectric, so the whole suite runs with one command and no emulator. Because
 the screens are stateless, each test just builds a `UiState`, renders it and checks the callbacks;
-there's no Hilt or network involved. Two setup details were needed for SDK 37 on JDK 25: Espresso
-is pinned to 3.7.0 (the 3.5.0 pulled in by Compose ui-test calls an API removed in recent Android),
-and the test JVM exports `jdk.internal.access` to Robolectric (see `app/build.gradle.kts`).
+there's no Hilt or network involved.
 
 **What isn't covered:** navigation end to end (search → ranking → back) with the real ViewModels
 and Hilt. Each piece is tested on its own, but not the full journey. I checked that by hand on an

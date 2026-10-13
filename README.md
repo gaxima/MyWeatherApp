@@ -86,7 +86,7 @@ Android Studio satisfies it.
 ## Tests
 
 ```bash
-./gradlew testDebugUnitTest            # 175 tests on the JVM, Compose UI tests included
+./gradlew testDebugUnitTest            # 184 tests on the JVM, Compose UI tests included
 ./gradlew validateDebugScreenshotTest  # 26 screenshot references
 ./gradlew lintDebug
 ```
@@ -101,7 +101,7 @@ wherever possible.
 
 | Area | Tests | What they pin down |
 |---|---|---|
-| Scoring (`domain/scoring`) | 63 | Ideal and bad days per activity, exact threshold edges, missing data, tie-breaks, determinism |
+| Scoring (`domain/scoring`) | 72 | Ideal and bad days per activity, exact threshold edges, missing data, tie-breaks, determinism |
 | Use cases | 14 | Blank queries skip the network, errors pass through untouched, every day gets all 4 activities |
 | Data layer | 36 | Mappers with nulls / short arrays / bad dates; both repositories against MockWebServer: success, 4xx, 5xx, 429, malformed JSON, wrong types, timeout, dropped connection, cancellation |
 | ViewModels | 35 | State transitions with Turbine on a `StandardTestDispatcher`: search debounce, stale results being dropped, retry, refresh keeping old data visible, theme save failures |
@@ -157,7 +157,7 @@ to 100 per activity, and every threshold is a documented constant in the scorer'
 |---|---|---|
 | **Skiing** | Snowfall 40, temperature 30, wind 20, gusts 10 | No fresh snowfall means the score is **0**. Full snow points from 5 cm. Daily max ≤ 0 °C keeps snow good; ≥ 5 °C is "too warm". |
 | **Surfing** | Wind 35, gusts 15, precipitation 20, sky 20, temperature 10 | Wind is a band: ≤ 5 km/h is flat, 15–30 is ideal, ≥ 50 is blown out. Gusts ≥ 70 km/h and ≥ 10 mm of rain count as bad. |
-| **Outdoor sightseeing** | Sky 30, precipitation 25, temperature 25, wind 10, gusts 10 | Most comfortable between 15 and 28 °C max. At ≥ 8 mm of rain, wind ≥ 55 km/h or gusts ≥ 80 km/h, that factor scores zero and becomes the reason. |
+| **Outdoor sightseeing** | Sky 30, precipitation 25, temperature 25, wind 10, gusts 10 | Most comfortable between 15 and 28 °C max; temperature points reach zero at 0 and 38 °C. Just outside the band the day is "cool" or "warm", and only from 7.5 / 33 °C (half the temperature points gone) is it "too cold" / "too hot". At ≥ 8 mm of rain, wind ≥ 55 km/h or gusts ≥ 80 km/h, that factor scores zero and becomes the reason. |
 | **Indoor sightseeing** | The same factors as outdoor, inverted (rain 40, sky 35, temperature 15, wind 5, gusts 5) | The worse it is outside, the better indoors looks. Never below 30, because a museum is always an option. |
 
 "Sky" comes from the WMO `weather_code`: clear = 1.0, partly cloudy = 0.8, overcast = 0.6,
@@ -166,7 +166,8 @@ fog = 0.4, drizzle = 0.3, rain or snow = 0.1, thunderstorm = 0. Unknown codes co
 **The reason** shown under each score is the first rule that matches, checked from most to least
 severe. For outdoor sightseeing that's storm, rain, strong wind, then too cold or too hot. Each
 activity also has its own reasons ("No snow for the day", "Too calm, likely flat", "Windy, surf may
-be choppy"...).
+be choppy", "Warm, find some shade"...). Where a factor is scored on a band, the reason follows the
+same band, so a label like "too hot" only appears once that factor has really pulled the score down.
 
 **Missing data:** if a value is `null`, that factor is skipped and the other weights are
 rescaled, and the UI lists it as "Not considered (no data)". If everything is missing, the score is
